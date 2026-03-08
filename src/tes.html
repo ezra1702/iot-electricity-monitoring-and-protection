@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Energy Monitoring Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ec5b13",
+                        "background-light": "#f8f6f6",
+                        "background-dark": "#221610",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .gauge-svg { transform: rotate(-90deg); }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 transition-colors duration-200">
+<div class="flex h-screen overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 bg-slate-900 dark:bg-black flex flex-col shrink-0">
+<div class="p-6 flex items-center gap-3">
+<div class="size-10 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div>
+<h1 class="text-white text-base font-bold leading-none">IoT Energy</h1>
+<p class="text-slate-400 text-xs mt-1">Admin Console</p>
+</div>
+</div>
+<nav class="flex-1 px-4 py-4 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary text-white" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">info</span>
+<span class="text-sm font-medium">System Info</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-slate-800 hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined">history</span>
+<span class="text-sm font-medium">Logs</span>
+</a>
+</nav>
+<div class="p-4 border-t border-slate-800">
+<div class="flex items-center gap-3 p-2 bg-slate-800/50 rounded-xl">
+<div class="size-8 rounded-full bg-cover" data-alt="User profile avatar circle image" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBAgHiz2Fcgpdxeb7SnlimUp9mbTYwAwejtsqHwBOB7I789oxs-joE_-RneubSHBNPxCrX3Lx2g5AYcXKaS7z1ToE5lOX60tb4gNEM1BodPoE4SuZb2w4WiILxYFMcUb98MjiHVqEE74FNuGD_iJAFNO0dTCV0sgWlF8Knu72Xg2Hg7Q9HbhRLNtiAP8zCcHBvlUPeFIn9S_0JIkX0wnCD21YRQ0XcH0k8fy6WS-tnfP4MF1X2L1VJbJuCw0swhTtXybk6KC20KC-w')"></div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-semibold text-white truncate">Alex Thompson</p>
+<p class="text-[10px] text-slate-400 truncate">System Admin</p>
+</div>
+<span class="material-symbols-outlined text-slate-400 text-sm">logout</span>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+<!-- Topbar -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 bg-white dark:bg-background-dark sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Energy Monitoring Dashboard</h2>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="text-xs font-mono font-bold tracking-wider">14:28:45 UTC</span>
+</div>
+<button class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+<div class="h-8 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
+<div class="size-10 rounded-full border-2 border-primary/20 bg-cover" data-alt="Circular profile photo for admin user" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuALDiTzsR2c1gToKBwY6w82jLo8H_5ILGMI5ZbyMnhmkhgS-JZksWT76cSGvbOzQEccvR7dskM0BnfkDS27Jd9NOBXMPk_iFXu1ZEOBQ2oMBtEf6lQR-UstENFu0zZKbh_yjwHRy28t1nuL30ubDe1X6iHysL-h4pBnnatSW5m4UqU7xmBa4AjGpETMKjaP4YBF95M2j5AhOJSYNEj5qK4r4ycV4u61c64uRarPNsTkD8Dv-fHk_btJa2nf4gVeVTqaYeEFndfObss')"></div>
+</div>
+</header>
+<div class="p-8 space-y-8">
+<!-- Highlighted Cost Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary to-orange-600 p-8 shadow-lg shadow-primary/20 flex items-center justify-between text-white">
+<div class="relative z-10">
+<p class="text-sm font-medium opacity-80 uppercase tracking-widest">Estimated Daily Cost</p>
+<h3 class="text-5xl font-bold mt-2">$1.25</h3>
+<div class="flex items-center gap-2 mt-4 text-xs font-bold bg-white/20 w-fit px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-xs">trending_up</span>
+<span>+2.4% vs Yesterday</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[120px] absolute -right-4 -bottom-4 opacity-10">payments</span>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 p-8 shadow-lg shadow-slate-900/20 flex items-center justify-between text-white">
+<div class="relative z-10">
+<p class="text-sm font-medium opacity-60 uppercase tracking-widest">Estimated Monthly Cost</p>
+<h3 class="text-5xl font-bold mt-2 text-primary">$38.40</h3>
+<div class="flex items-center gap-2 mt-4 text-xs font-bold bg-primary/20 text-primary w-fit px-3 py-1 rounded-full">
+<span class="material-symbols-outlined text-xs">trending_down</span>
+<span>-1.5% vs Last Month</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[120px] absolute -right-4 -bottom-4 opacity-10">calendar_month</span>
+</div>
+</div>
+<!-- Real-time Metrics Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+<div class="bg-white dark:bg-slate-800/40 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 text-slate-400 mb-2">
+<span class="material-symbols-outlined text-xl text-primary">electrical_services</span>
+<span class="text-xs font-bold uppercase">Voltage</span>
+</div>
+<p class="text-2xl font-bold dark:text-white">228.5V</p>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mt-3">
+<div class="bg-primary h-1 rounded-full" style="width: 85%"></div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800/40 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 text-slate-400 mb-2">
+<span class="material-symbols-outlined text-xl text-blue-500">timeline</span>
+<span class="text-xs font-bold uppercase">Current</span>
+</div>
+<p class="text-2xl font-bold dark:text-white">4.2A</p>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mt-3">
+<div class="bg-blue-500 h-1 rounded-full" style="width: 42%"></div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800/40 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 text-slate-400 mb-2">
+<span class="material-symbols-outlined text-xl text-green-500">bolt</span>
+<span class="text-xs font-bold uppercase">Power</span>
+</div>
+<p class="text-2xl font-bold dark:text-white">960W</p>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mt-3">
+<div class="bg-green-500 h-1 rounded-full" style="width: 60%"></div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800/40 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 text-slate-400 mb-2">
+<span class="material-symbols-outlined text-xl text-yellow-500">battery_charging_full</span>
+<span class="text-xs font-bold uppercase">Energy</span>
+</div>
+<p class="text-2xl font-bold dark:text-white">12.4kWh</p>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mt-3">
+<div class="bg-yellow-500 h-1 rounded-full" style="width: 25%"></div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800/40 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
+<div class="flex items-center gap-3 text-slate-400 mb-2">
+<span class="material-symbols-outlined text-xl text-purple-500">waves</span>
+<span class="text-xs font-bold uppercase">PF Factor</span>
+</div>
+<p class="text-2xl font-bold dark:text-white">0.98</p>
+<div class="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full mt-3">
+<div class="bg-purple-500 h-1 rounded-full" style="width: 98%"></div>
+</div>
+</div>
+</div>
+<!-- Gauges & Main Chart -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Gauge Meters -->
+<div class="bg-white dark:bg-slate-800/40 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+<h4 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-8">Analog Monitors</h4>
+<div class="flex flex-col gap-12 items-center">
+<!-- Voltage Gauge -->
+<div class="relative w-48 h-24 overflow-hidden">
+<svg class="w-48 h-48 gauge-svg" viewbox="0 0 100 100">
+<circle class="text-slate-100 dark:text-slate-700" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-dasharray="141.37" stroke-dashoffset="0" stroke-width="8"></circle>
+<circle class="text-primary" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-dasharray="141.37" stroke-dashoffset="40" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-end pb-1">
+<span class="text-2xl font-bold dark:text-white">228.5</span>
+<span class="text-[10px] font-bold text-slate-400 uppercase">Voltage (V)</span>
+</div>
+</div>
+<!-- Current Gauge -->
+<div class="relative w-48 h-24 overflow-hidden">
+<svg class="w-48 h-48 gauge-svg" viewbox="0 0 100 100">
+<circle class="text-slate-100 dark:text-slate-700" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-dasharray="141.37" stroke-dashoffset="0" stroke-width="8"></circle>
+<circle class="text-blue-500" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-dasharray="141.37" stroke-dashoffset="80" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-end pb-1">
+<span class="text-2xl font-bold dark:text-white">4.2</span>
+<span class="text-[10px] font-bold text-slate-400 uppercase">Current (A)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Usage Chart (Simulated Recharts Area) -->
+<div class="lg:col-span-2 bg-white dark:bg-slate-800/40 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
+<div class="flex items-center justify-between mb-8">
+<div>
+<h4 class="text-sm font-bold text-slate-500 uppercase tracking-widest">Consumption Trends</h4>
+<p class="text-xs text-slate-400 mt-1">Real-time Power (W) vs Energy (kWh)</p>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1 text-[10px] font-bold bg-primary/10 text-primary rounded-md border border-primary/20">LIVE</button>
+<button class="px-3 py-1 text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-500 rounded-md">24H</button>
+</div>
+</div>
+<div class="h-64 relative">
+<!-- Mock Chart Grid Lines -->
+<div class="absolute inset-0 flex flex-col justify-between opacity-10">
+<div class="border-t border-slate-900 dark:border-white w-full"></div>
+<div class="border-t border-slate-900 dark:border-white w-full"></div>
+<div class="border-t border-slate-900 dark:border-white w-full"></div>
+<div class="border-t border-slate-900 dark:border-white w-full"></div>
+<div class="border-t border-slate-900 dark:border-white w-full"></div>
+</div>
+<!-- Area/Line Paths -->
+<svg class="absolute inset-0 h-full w-full" preserveaspectratio="none">
+<defs>
+<lineargradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:var(--primary);stop-opacity:0.2"></stop>
+<stop offset="100%" style="stop-color:var(--primary);stop-opacity:0"></stop>
+</lineargradient>
+</defs>
+<path class="w-full" d="M0 200 L50 160 L100 180 L150 120 L200 140 L250 80 L300 100 L350 40 L400 90 L450 60 L500 110 L550 50 L600 70 L650 30 L700 80" fill="none" stroke="#ec5b13" stroke-width="3"></path>
+<path d="M0 200 L50 160 L100 180 L150 120 L200 140 L250 80 L300 100 L350 40 L400 90 L450 60 L500 110 L550 50 L600 70 L650 30 L700 80 V256 H0 Z" fill="url(#grad1)"></path>
+<path d="M0 240 Q 150 220, 300 180 T 600 120 T 700 80" fill="none" stroke="#3b82f6" stroke-dasharray="8,4" stroke-width="2"></path>
+</svg>
+<!-- X Axis Labels -->
+<div class="absolute -bottom-6 inset-x-0 flex justify-between text-[10px] font-bold text-slate-400">
+<span>12:00</span><span>12:30</span><span>13:00</span><span>13:30</span><span>14:00</span><span>14:30</span>
+</div>
+</div>
+</div>
+</div>
+<!-- History Table -->
+<div class="bg-white dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+<h4 class="text-sm font-bold text-slate-500 uppercase tracking-widest">Recent Logs</h4>
+<div class="relative">
+<input class="pl-9 pr-4 py-1.5 rounded-lg text-xs bg-slate-50 dark:bg-slate-900 border-none ring-1 ring-slate-200 dark:ring-slate-700 focus:ring-primary w-64" placeholder="Search logs..." type="text"/>
+<span class="material-symbols-outlined absolute left-2.5 top-1.5 text-slate-400 text-lg">search</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+<tr>
+<th class="px-6 py-4">Timestamp</th>
+<th class="px-6 py-4">Voltage (V)</th>
+<th class="px-6 py-4">Current (A)</th>
+<th class="px-6 py-4">Power (W)</th>
+<th class="px-6 py-4">Frequency (Hz)</th>
+<th class="px-6 py-4">Status</th>
+</tr>
+</thead>
+<tbody class="text-xs divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+<td class="px-6 py-4 font-mono text-slate-500">2023-11-24 14:28:12</td>
+<td class="px-6 py-4 font-semibold">228.4</td>
+<td class="px-6 py-4 font-semibold">4.18</td>
+<td class="px-6 py-4 font-semibold">954.7</td>
+<td class="px-6 py-4">50.02</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400 font-bold text-[10px]">NORMAL</span></td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+<td class="px-6 py-4 font-mono text-slate-500">2023-11-24 14:27:58</td>
+<td class="px-6 py-4 font-semibold">228.6</td>
+<td class="px-6 py-4 font-semibold">4.22</td>
+<td class="px-6 py-4 font-semibold">964.8</td>
+<td class="px-6 py-4">49.98</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400 font-bold text-[10px]">NORMAL</span></td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+<td class="px-6 py-4 font-mono text-slate-500">2023-11-24 14:27:44</td>
+<td class="px-6 py-4 font-semibold">229.1</td>
+<td class="px-6 py-4 font-semibold">5.82</td>
+<td class="px-6 py-4 font-semibold">1333.4</td>
+<td class="px-6 py-4">50.00</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 font-bold text-[10px]">SPIKE</span></td>
+</tr>
+<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors">
+<td class="px-6 py-4 font-mono text-slate-500">2023-11-24 14:27:30</td>
+<td class="px-6 py-4 font-semibold">228.2</td>
+<td class="px-6 py-4 font-semibold">4.15</td>
+<td class="px-6 py-4 font-semibold">947.0</td>
+<td class="px-6 py-4">50.01</td>
+<td class="px-6 py-4"><span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400 font-bold text-[10px]">NORMAL</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-slate-50 dark:bg-slate-900/30 flex items-center justify-between text-[10px] font-bold text-slate-500">
+<span>Showing 1 to 4 of 1,245 logs</span>
+<div class="flex gap-2">
+<button class="px-3 py-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">Prev</button>
+<button class="px-3 py-1 rounded border border-primary bg-primary text-white">1</button>
+<button class="px-3 py-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">2</button>
+<button class="px-3 py-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">3</button>
+<button class="px-3 py-1 rounded border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">Next</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>
