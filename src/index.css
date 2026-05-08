@@ -1,24 +1,165 @@
-@import './styles/global.css';
+@import "tailwindcss";
 
-/* Override Vite defaults yang mengganggu layout */
+@theme {
+  --color-navy-950: #020617;
+  --color-navy-900: #0F172A;
+  --color-navy-800: #1E293B;
+  --color-navy-700: #334155;
+  --color-navy-600: #475569;
+  --color-electric: #38BDF8;
+  --color-electric-cyan: #22D3EE;
+  --color-electric-soft: #60A5FA;
+  --color-electric-glow: #0EA5E9;
+  --color-danger: #EF4444;
+  --color-warning: #F59E0B;
+  --color-success: #22C55E;
+
+  --shadow-glow-blue: 0 0 20px rgba(56,189,248,0.45), 0 0 40px rgba(56,189,248,0.15);
+  --shadow-glow-sm:   0 0 12px rgba(56,189,248,0.30);
+  --shadow-glow-cyan: 0 0 20px rgba(34,211,238,0.45);
+  --shadow-glass:     0 8px 32px rgba(0,0,0,0.50), inset 0 1px 0 rgba(255,255,255,0.04);
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+}
+
+/* ── Base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-family: var(--font-sans); }
+
 body {
-  display: block;
-  place-items: unset;
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
+  background-color: #020617;
+  color: #f1f5f9;
+  -webkit-font-smoothing: antialiased;
 }
 
-button {
-  border-radius: unset;
-  border: none;
-  padding: unset;
-  font-size: inherit;
-  font-weight: inherit;
-  font-family: inherit;
-  background-color: unset;
-  cursor: pointer;
-  transition: unset;
+/* ── Scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(56,189,248,0.25);
+  border-radius: 99px;
 }
-button:hover { border-color: unset; }
-button:focus, button:focus-visible { outline: none; }
+::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,0.45); }
+
+/* ── Reusable component classes ───────────────────── */
+.glass-card {
+  background: rgba(30,41,59,0.45);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 1.25rem;
+}
+
+.glass-card-sm {
+  background: rgba(30,41,59,0.35);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 0.875rem;
+}
+
+.glow-text {
+  text-shadow: 0 0 24px rgba(56,189,248,0.75);
+}
+
+.gradient-electric {
+  background: linear-gradient(135deg, #38BDF8 0%, #22D3EE 100%);
+}
+
+.gradient-electric-soft {
+  background: linear-gradient(135deg, #60A5FA 0%, #38BDF8 100%);
+}
+
+.gradient-dark {
+  background: linear-gradient(135deg, #0F172A 0%, #020617 100%);
+}
+
+.text-gradient-electric {
+  background: linear-gradient(135deg, #38BDF8, #22D3EE);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.nav-glow {
+  box-shadow: inset 0 0 20px rgba(56,189,248,0.08), 0 0 12px rgba(56,189,248,0.20);
+}
+
+/* ── Input ────────────────────────────────────────── */
+.input-field {
+  width: 100%;
+  background: rgba(30,41,59,0.6);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 0.75rem;
+  padding: 0.75rem 1rem;
+  color: #f1f5f9;
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.18s;
+}
+.input-field:focus { border-color: rgba(56,189,248,0.50); }
+.input-field::placeholder { color: #475569; }
+
+/* ── Animations ───────────────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes pulseGlow {
+  0%,100% { box-shadow: 0 0 8px  rgba(56,189,248,0.25); }
+  50%      { box-shadow: 0 0 28px rgba(56,189,248,0.65), 0 0 50px rgba(56,189,248,0.25); }
+}
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+@keyframes scanLine {
+  from { top: 0%; }
+  to   { top: 100%; }
+}
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to   { background-position:  200% center; }
+}
+@keyframes spinSlow {
+  to { transform: rotate(360deg); }
+}
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+@keyframes ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-float     { animation: float 3s ease-in-out infinite; }
+.animate-pulse-glow{ animation: pulseGlow 2.5s ease-in-out infinite; }
+.animate-spin-slow { animation: spinSlow 8s linear infinite; }
+.animate-blink     { animation: blink 1.2s ease-in-out infinite; }
+
+/* ── ApexCharts dark overrides ────────────────────── */
+.apexcharts-canvas  { background: transparent !important; }
+.apexcharts-tooltip {
+  background: #1E293B !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
+  border-radius: 0.75rem !important;
+}
+.apexcharts-tooltip-title {
+  background: rgba(56,189,248,0.1) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+  color: #94A3B8 !important;
+}
+.apexcharts-legend-text { color: #94A3B8 !important; }

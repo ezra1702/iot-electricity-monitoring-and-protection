@@ -1,0 +1,22 @@
+-- Buka phpMyAdmin (http://localhost:8080)
+-- Masuk ke database 'voltedge', lalu pilih tab 'SQL'
+-- Copy-Paste semua kode di bawah ini lalu tekan tombol GO / KIRIM
+
+-- 1. Buat User Admin
+-- Kita gunakan ID 'user-001' agar mudah direlasikan ke bawahnya.
+-- (Password asli: '123', sudah di-hash menggunakan algoritma bcrypt)
+INSERT INTO users (id, name, email, password_hash) 
+VALUES ('user-001', 'Admin Kos', 'admin123@gmail.com', '$2a$10$8pw6wkBQxrwMCiIMx8ueJO4NTjfZaxKMzvk9wIFjmXREE2ArIyonW');
+
+-- 2. Buat Perangkat ESP1 (Rumah Kos 1)
+-- Perhatikan bahwa 'user_id' diisi 'user-001' yang menandakan alat ini milik admin di atas.
+INSERT INTO devices (id, user_id, mac_address, name, location, status, max_current_limit, price_per_kwh)
+VALUES ('esp-001', 'user-001', 'A1:B2:C3:D4:E5:F6', 'ESP1 (Node Kos 1)', 'Kamar Kos 1', 'online', 5.00, 1444.70);
+
+-- 3. Masukkan Data Sensor Bohongan (Dummy Telemetry)
+-- Data ini masuk ke perangkat 'esp-001'
+INSERT INTO sensor_data (device_id, voltage, current, power, energy, frequency, power_factor) 
+VALUES 
+('esp-001', 220.5, 1.20, 264.6, 12.5, 50.0, 0.98),
+('esp-001', 221.0, 2.50, 552.5, 12.6, 50.0, 0.99),
+('esp-001', 219.8, 0.50, 109.9, 12.7, 49.9, 0.95);

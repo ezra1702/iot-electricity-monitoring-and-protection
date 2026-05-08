@@ -1,94 +1,129 @@
-import { useState } from "react";
-import { Zap, Cpu, LayoutDashboard, Settings, Info, ChevronLeft } from "lucide-react";
-import { Pill } from "../ui/Pill";
-import { STATUS } from "../../constants/theme";
+import { Zap, LayoutDashboard, Settings, Bell, LogOut, ChevronLeft, Cpu } from 'lucide-react'
 
-const MENUS = [
-  { id: "dashboard", label: "Dashboard",   icon: <LayoutDashboard size={16} /> },
-  { id: "settings",  label: "Settings",    icon: <Settings size={16} /> },
-  { id: "sysinfo",   label: "System Info", icon: <Info size={16} /> },
-];
+export default function Sidebar({ page, setPage, collapsed, setCollapsed, notifCount, isMobile, user }) {
+  const MENU = [
+    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { id: 'notifications', icon: Bell, label: 'Notifikasi', badge: notifCount },
+    { id: 'settings', icon: Settings, label: 'Pengaturan' },
+  ]
+  const initial = user?.name ? user.name.charAt(0).toUpperCase() : '?'
 
-/**
- * Collapsible sidebar with navigation menu, device info, and watermark.
- */
-export function Sidebar({ sbOpen, mobile = false, menu, setMenu, sensor, device, onBack, onMobileClose }) {
-  const SB  = "var(--sidebar)";
-  const SBB = "var(--bd)";
-  const SBT = "var(--t3)";
-  const SBH = "var(--hover)";
-  const sc  = STATUS[sensor?.status] || STATUS.normal;
+  // If Mobile, force a strictly sized bottom layout that escapes flex rules!
+  const sidebarStyle = isMobile 
+    ? {
+        position: 'fixed', bottom: 0, left: 0, right: 0,
+        height: 64, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.05)',
+        zIndex: 50, display: 'flex', flexDirection: 'column'
+      }
+    : {
+        width: collapsed ? 80 : 250, height: '100vh',
+        background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', borderRight: '1px solid rgba(255,255,255,0.05)',
+        transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 40
+      }
 
   return (
-    <div style={{
-      display: "flex", flexDirection: "column", height: "100%", background: SB,
-      borderRight: `1px solid ${SBB}`,
-      width: mobile ? 220 : sbOpen ? 220 : 56,
-      transition: "width .3s ease", overflow: "hidden", flexShrink: 0,
-      position: "relative",
-    }}>
-      {/* Watermark */}
-      <div style={{ position: "absolute", bottom: -40, left: -50, opacity: 0.03, pointerEvents: "none", zIndex: 0 }}>
-        <Cpu size={280} color="var(--t1)" />
-      </div>
-
-      {/* Brand header */}
-      <div style={{ height: 56, display: "flex", alignItems: "center", gap: 10, padding: "0 16px", borderBottom: `1px solid ${SBB}`, flexShrink: 0, position: "relative", zIndex: 1 }}>
-        <div style={{ flexShrink: 0, padding: 8, borderRadius: 12, background: "#f97316" }}><Zap size={16} color="#fff" /></div>
-        {(sbOpen || mobile) && (
-          <div>
-            <p style={{ fontSize: 13, fontWeight: 700, color: "var(--t1)", lineHeight: 1 }}>IoT Energy</p>
-            <p style={{ fontSize: 9.5, color: "var(--t3)", marginTop: 2 }}>Monitor Console</p>
+    <aside style={sidebarStyle}>
+      
+      {/* DESKTOP LOGO */}
+      {!isMobile && (
+        <div 
+          onClick={() => collapsed && setCollapsed(false)}
+          style={{ padding: '1.25rem 1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden', cursor: collapsed ? 'pointer' : 'default' }}
+          title={collapsed ? "Buka Sidebar" : ""}
+        >
+          <div className="gradient-electric" style={{ width: 36, height: 36, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Zap size={17} color="#fff" />
           </div>
-        )}
-      </div>
-
-      {/* Device info */}
-      {(sbOpen || mobile) && (
-        <div style={{ margin: "14px 12px 4px", padding: "10px 12px", borderRadius: 12, background: "rgba(249,115,22,.08)", border: "1px solid rgba(249,115,22,.18)", position: "relative", zIndex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
-            <span style={{ width: 5, height: 5, borderRadius: "50%", background: sc.dot }} />
-            <span style={{ fontSize: 9, fontWeight: 700, color: "var(--t3)", textTransform: "uppercase", letterSpacing: 0.8 }}>{sc.label}</span>
-          </div>
-          <p style={{ fontSize: 12, fontWeight: 700, color: "var(--t1)", lineHeight: 1.3 }}>{device?.name}</p>
-          <p className="mono" style={{ fontSize: 10, color: "#f97316", marginTop: 2 }}>{device?.id}</p>
+          {!collapsed && (
+            <div style={{ flexShrink: 0 }}>
+              <h1 style={{ fontSize: 16, fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.02em', lineHeight: 1.1 }}>VoltEdge</h1>
+              <p style={{ fontSize: 10, color: '#38BDF8', fontWeight: 600 }}>IoT Monitor</p>
+            </div>
+          )}
+          {!collapsed && (
+            <button onClick={() => setCollapsed(true)} className="glass-card" style={{ marginLeft: 'auto', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 6, cursor: 'pointer', border: '1px solid rgba(255,255,255,0.05)', color: '#64748B' }}>
+              <ChevronLeft size={14} />
+            </button>
+          )}
         </div>
       )}
 
-      {/* Navigation */}
-      <nav style={{ flex: 1, padding: "10px 8px", display: "flex", flexDirection: "column", gap: 6, position: "relative", zIndex: 1 }}>
-        {MENUS.map(m => {
-          const active = menu === m.id;
+      {/* MAGIC NAVIGATION (FLEX ROW ON MOBILE, COLUMN ON DESKTOP) */}
+      <nav style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'row' : 'column', justifyContent: isMobile ? 'space-around' : 'flex-start', padding: isMobile ? 0 : '1rem 0.5rem', gap: isMobile ? 0 : 6 }}>
+        {MENU.map(({ id, icon: Icon, label, badge }) => {
+          const active = page === id
           return (
-            <button key={m.id} onClick={() => { setMenu(m.id); if (mobile) onMobileClose?.(); }}
+            <button
+              key={id}
+              onClick={() => setPage(id)}
               style={{
-                width: "100%", display: "flex", alignItems: "center", gap: 10,
-                padding: sbOpen || mobile ? "9px 12px" : "9px 0",
-                justifyContent: sbOpen || mobile ? "flex-start" : "center",
-                borderRadius: 12, border: "none", cursor: "pointer", transition: "all .15s",
-                background: active ? "#f97316" : SBH, color: active ? "#fff" : SBT,
-                boxShadow: active ? "0 4px 14px rgba(249,115,22,.28)" : undefined,
-              }}>
-              <span style={{ flexShrink: 0 }}>{m.icon}</span>
-              {(sbOpen || mobile) && <span style={{ fontSize: 13, fontWeight: 500 }}>{m.label}</span>}
+                position: 'relative', display: 'flex', flexDirection: isMobile ? 'column' : 'row', alignItems: 'center', justifyContent: isMobile ? 'center' : (collapsed ? 'center' : 'flex-start'),
+                gap: isMobile ? 4 : 10, padding: isMobile ? '8px 0' : '10px 14px', borderRadius: isMobile ? 0 : 12, border: 'none', background: active && !isMobile ? 'rgba(56,189,248,0.1)' : 'transparent',
+                color: active ? '#38BDF8' : '#475569', cursor: 'pointer', flex: isMobile ? 1 : 'none', height: isMobile ? '100%' : 'auto', minHeight: isMobile ? 'auto' : 42,
+                transition: 'all 0.2s', overflow: 'hidden'
+              }}
+            >
+              {/* Active Indicator Line matches orientation */}
+              {active && isMobile && <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 24, height: 4, background: '#38BDF8', borderRadius: '0 0 4px 4px', boxShadow: '0 0 10px rgba(56,189,248,0.6)' }} />}
+              {active && !isMobile && <div style={{ position: 'absolute', left: -8, top: '50%', transform: 'translateY(-50%)', width: 4, height: 26, background: '#38BDF8', borderRadius: '0 4px 4px 0', boxShadow: '0 0 10px rgba(56,189,248,0.6)' }} />}
+
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <Icon size={isMobile ? 20 : 18} />
+                {badge > 0 && (
+                  <span style={{ position: 'absolute', top: -4, right: -4, width: 14, height: 14, background: '#38BDF8', color: '#020617', fontSize: 8, fontWeight: 800, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid #0f172a' }}>
+                    {badge}
+                  </span>
+                )}
+              </div>
+              
+              {(!collapsed || isMobile) && (
+                <span style={{ fontSize: isMobile ? 10 : 13, fontWeight: isMobile ? 700 : 600, color: active ? '#f1f5f9' : '#64748B', whiteSpace: 'nowrap' }}>
+                  {label}
+                </span>
+              )}
             </button>
-          );
+          )
         })}
       </nav>
 
-      {/* Back button */}
-      {(sbOpen || mobile) && (
-        <div style={{ padding: "10px 8px", borderTop: `1px solid ${SBB}`, position: "relative", zIndex: 1 }}>
-          <button
-            onClick={() => { onBack(); if (mobile) onMobileClose?.(); }}
-            style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", borderRadius: 10, border: "none", cursor: "pointer", background: "transparent", color: SBT, fontSize: 12, fontWeight: 500, transition: "background .15s" }}
-            onMouseEnter={e => e.currentTarget.style.background = SBH}
-            onMouseLeave={e => e.currentTarget.style.background = "transparent"}
-          >
-            <ChevronLeft size={14} /> Ganti Perangkat
-          </button>
+      {/* DESKTOP USER PROFILE & LOGOUT */}
+      {!isMobile && (
+        <div style={{ padding: '0.75rem 0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {!collapsed && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0.6rem 0.75rem', borderRadius: 12, background: 'rgba(255,255,255,0.03)' }}>
+              <div className="gradient-electric" style={{ width: 30, height: 30, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12, fontWeight: 700, color: '#020617', overflow: 'hidden' }}>
+                {user?.photo ? <img src={user.photo} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initial}
+              </div>
+              <div style={{ overflow: 'hidden' }}>
+                <p style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{user?.name || 'Loading...'}</p>
+              </div>
+            </div>
+          )}
+          <div style={{ display: 'flex', flexDirection: collapsed ? 'column' : 'row', gap: 4 }}>
+            <button
+              onClick={() => setPage('login')}
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 8px', borderRadius: 12, border: 'none', background: 'transparent', color: '#475569', cursor: 'pointer', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#EF4444'; e.currentTarget.style.background = 'rgba(239,68,68,0.05)' }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'transparent' }}
+              title="Logout"
+            >
+              <LogOut size={16} />
+              {!collapsed && <span style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>Logout</span>}
+            </button>
+            <button
+              onClick={() => setPage('devices')}
+              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 8px', borderRadius: 12, border: 'none', background: 'transparent', color: '#475569', cursor: 'pointer', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.color = '#38BDF8'; e.currentTarget.style.background = 'rgba(56,189,248,0.05)' }}
+              onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'transparent' }}
+              title="Pairing Node"
+            >
+              <Cpu size={16} />
+              {!collapsed && <span style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>Pairing</span>}
+            </button>
+          </div>
         </div>
       )}
-    </div>
-  );
+    </aside>
+  )
 }

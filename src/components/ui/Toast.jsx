@@ -20,7 +20,7 @@ export function Toast({ t, onClose }) {
       <span style={{ flex: 1 }}>{t.message}</span>
       <button
         onClick={() => onClose(t.id)}
-        style={{ background: "none", border: "none", cursor: "pointer", color: "#fff", opacity: 0.7, display: "flex" }}
+        style={{ background: "none", border: "none", cursor: "pointer", color: "#fff".7, display: "flex" }}
       >
         <X size={13} />
       </button>

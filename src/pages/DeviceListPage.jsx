@@ -11,16 +11,16 @@ import { Avatar } from "../components/ui/Avatar";
    CSS
 ═══════════════════════════════════════════════════════════════ */
 const PAIRING_CSS = `
-@keyframes pm-fade-in    { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-@keyframes pm-scale-in   { from{opacity:0;transform:scale(.94)} to{opacity:1;transform:scale(1)} }
-@keyframes pm-slide-r    { from{opacity:0;transform:translateX(28px)} to{opacity:1;transform:translateX(0)} }
+@keyframes pm-fade-in    { from{;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes pm-scale-in   { from{;transform:scale(.94)} to{opacity:1;transform:scale(1)} }
+@keyframes pm-slide-r    { from{;transform:translateX(28px)} to{opacity:1;transform:translateX(0)} }
 @keyframes pm-spin       { to{transform:rotate(360deg)} }
-@keyframes pm-ping       { 0%{transform:scale(1);opacity:.8} 100%{transform:scale(2.4);opacity:0} }
+@keyframes pm-ping       { 0%{transform:scale(1);opacity:.8} 100%{transform:scale(2.4);} }
 @keyframes pm-scan-line  { 0%{top:8%} 100%{top:92%} }
 @keyframes pm-bounce-dot { 0%,80%,100%{transform:scale(0);opacity:.4} 40%{transform:scale(1);opacity:1} }
-@keyframes pm-success    { 0%{transform:scale(0) rotate(-30deg);opacity:0} 60%{transform:scale(1.15) rotate(4deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
+@keyframes pm-success    { 0%{transform:scale(0) rotate(-30deg);} 60%{transform:scale(1.15) rotate(4deg)} 100%{transform:scale(1) rotate(0);opacity:1} }
 @keyframes pm-checkdraw  { from{stroke-dashoffset:100} to{stroke-dashoffset:0} }
-@keyframes pm-row-in     { from{opacity:0;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
+@keyframes pm-row-in     { from{;transform:translateX(-12px)} to{opacity:1;transform:translateX(0)} }
 @keyframes pm-shimmer    { from{transform:translateX(-100%)} to{transform:translateX(100%)} }
 
 /* ── WiFi scan NEW animations ── */
@@ -30,10 +30,10 @@ const PAIRING_CSS = `
 }
 @keyframes radar-ring-pulse {
   0%   { transform: scale(1);   opacity: .5; }
-  100% { transform: scale(1.9); opacity: 0;  }
+  100% { transform: scale(1.9); ;  }
 }
 @keyframes device-pop {
-  0%   { opacity:0; transform:translateY(10px) scale(.95); }
+  0%   { ; transform:translateY(10px) scale(.95); }
   60%  { transform:translateY(-3px) scale(1.02); }
   100% { opacity:1; transform:translateY(0) scale(1); }
 }
@@ -47,7 +47,7 @@ const PAIRING_CSS = `
 @keyframes scan-ticker {
   0%   { width:0%;   opacity:1; }
   80%  { width:100%; opacity:1; }
-  100% { width:100%; opacity:0; }
+  100% { width:100%; ; }
 }
 @keyframes glow-pulse {
   0%,100% { box-shadow: 0 0 0 0 rgba(249,115,22,0); }
@@ -55,7 +55,7 @@ const PAIRING_CSS = `
 }
 @keyframes ping-dot {
   0%   { transform:scale(1); opacity:1; }
-  100% { transform:scale(3); opacity:0; }
+  100% { transform:scale(3); ; }
 }
 
 .pm-overlay {
@@ -151,7 +151,7 @@ const PAIRING_CSS = `
   position:relative; overflow:hidden;
 }
 .wifi-device-card::before {
-  content:''; position:absolute; inset:0; opacity:0;
+  content:''; position:absolute; inset:0; ;
   background:linear-gradient(120deg,rgba(249,115,22,.04),transparent);
   transition:opacity .2s;
 }
