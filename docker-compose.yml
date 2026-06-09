@@ -45,7 +45,7 @@ services:
       - DB_PASSWORD=rootpassword
       - DB_NAME=iot-energy
       - DB_PORT=3306
-      - MQTT_BROKER_URL=mqtt://mqtt:1883
+      - MQTT_BROKER_URL=mqtt://broker.hivemq.com:1883
     depends_on:
       - mysql
       - mqtt

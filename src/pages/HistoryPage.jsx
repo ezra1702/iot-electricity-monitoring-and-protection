@@ -11,14 +11,26 @@ const STATUS_STYLE = {
 
 const PER_PAGE = 12
 
-export default function HistoryPage() {
+export default function HistoryPage({ logs = [] }) {
   const [search, setSearch]   = useState('')
   const [filter, setFilter]   = useState('all')
   const [page, setPage]       = useState(1)
 
   useEffect(() => { pageEntrance('#history-page') }, [])
 
-  const filtered = HISTORY_LOGS.filter(r => {
+  const displayLogs = logs.length > 0 ? logs.map((l, index) => ({
+    id: index + 1,
+    timestamp: l.time,
+    device: 'VoltEdge Panel Utama',
+    voltage: l.voltage,
+    current: l.current,
+    power: l.power,
+    energy: l.energy,
+    powerFactor: l.powerFactor,
+    status: l.status.toLowerCase()
+  })) : HISTORY_LOGS
+
+  const filtered = displayLogs.filter(r => {
     const matchFilter = filter === 'all' || r.status === filter
     const q = search.toLowerCase()
     const matchSearch = !q || r.device.toLowerCase().includes(q) || r.status.includes(q) || r.timestamp.includes(q)

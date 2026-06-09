@@ -1,4 +1,4 @@
-import { Zap, LayoutDashboard, Settings, Bell, LogOut, ChevronLeft, Cpu } from 'lucide-react'
+import { Zap, LayoutDashboard, Settings, Bell, ChevronLeft } from 'lucide-react'
 
 export default function Sidebar({ page, setPage, collapsed, setCollapsed, notifCount, isMobile, user }) {
   const MENU = [
@@ -87,7 +87,7 @@ export default function Sidebar({ page, setPage, collapsed, setCollapsed, notifC
         })}
       </nav>
 
-      {/* DESKTOP USER PROFILE & LOGOUT */}
+      {/* DESKTOP USER PROFILE */}
       {!isMobile && (
         <div style={{ padding: '0.75rem 0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: 4 }}>
           {!collapsed && (
@@ -100,28 +100,6 @@ export default function Sidebar({ page, setPage, collapsed, setCollapsed, notifC
               </div>
             </div>
           )}
-          <div style={{ display: 'flex', flexDirection: collapsed ? 'column' : 'row', gap: 4 }}>
-            <button
-              onClick={() => setPage('login')}
-              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 8px', borderRadius: 12, border: 'none', background: 'transparent', color: '#475569', cursor: 'pointer', transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#EF4444'; e.currentTarget.style.background = 'rgba(239,68,68,0.05)' }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'transparent' }}
-              title="Logout"
-            >
-              <LogOut size={16} />
-              {!collapsed && <span style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>Logout</span>}
-            </button>
-            <button
-              onClick={() => setPage('devices')}
-              style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: '10px 8px', borderRadius: 12, border: 'none', background: 'transparent', color: '#475569', cursor: 'pointer', transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#38BDF8'; e.currentTarget.style.background = 'rgba(56,189,248,0.05)' }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#475569'; e.currentTarget.style.background = 'transparent' }}
-              title="Pairing Node"
-            >
-              <Cpu size={16} />
-              {!collapsed && <span style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>Pairing</span>}
-            </button>
-          </div>
         </div>
       )}
     </aside>

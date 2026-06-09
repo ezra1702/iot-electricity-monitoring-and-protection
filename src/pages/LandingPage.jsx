@@ -5,7 +5,7 @@ import { pageEntrance, btnPress } from '../utils/animations'
 const FEATURES = [
   { icon: Activity,  title: 'Real-Time Monitoring', desc: 'Pantau voltage, arus, daya, dan energi setiap 2 detik langsung dari sensor PZEM-004T & MQ-2.', color: '#38BDF8' },
   { icon: Shield,    title: 'Proteksi Otomatis',    desc: 'Trip relay otomatis saat overload atau asap terdeteksi. Sistem alert berlapis untuk keamanan maksimal.', color: '#22D3EE' },
-  { icon: BarChart3, title: 'Analitik & ML',         desc: 'Prediksi konsumsi energi dengan Linear Regression + deteksi anomali via Isolation Forest.', color: '#60A5FA' },
+  { icon: BarChart3, title: 'Analitik & Riwayat',     desc: 'Grafik pemantauan tegangan, arus, daya, dan riwayat kumulatif pemakaian energi listrik harian dan bulanan.', color: '#60A5FA' },
   { icon: Wifi,      title: 'IoT via ESP32',         desc: 'Integrasi penuh dengan ESP32 menggunakan protokol MQTT untuk data realtime yang andal.', color: '#A78BFA' },
 ]
 
@@ -71,7 +71,7 @@ export default function LandingPage({ setPage }) {
         </h1>
 
         <p className="a-title" style={{ fontSize: 'clamp(1rem, 2vw, 1.15rem)', color: '#64748B', lineHeight: 1.75, maxWidth: 600, margin: '0 auto 40px' }}>
-          Dashboard IoT real-time untuk monitoring <strong style={{ color: '#94A3B8' }}>tegangan, arus, daya, dan energi</strong>. Dilengkapi proteksi otomatis dan prediksi berbasis Machine Learning.
+          Dashboard IoT real-time untuk monitoring <strong style={{ color: '#94A3B8' }}>tegangan, arus, daya, dan energi</strong>. Dilengkapi proteksi otomatis dan visualisasi grafik fluktuasi real-time.
         </p>
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, flexWrap: 'wrap', marginBottom: 64 }}>

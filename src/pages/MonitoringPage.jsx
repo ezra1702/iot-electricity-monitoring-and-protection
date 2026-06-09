@@ -26,50 +26,11 @@ function GaugeCard({ label, value, max, unit, color }) {
   )
 }
 
-export default function MonitoringPage() {
-  const [metrics, setMetrics] = useState({ voltage: 0, current: 0, power: 0, powerFactor: 0, frequency: 0, status: 'normal' })
-  const [history, setHistory] = useState([])
-  const [deviceInfo, setDeviceInfo] = useState(null)
+export default function MonitoringPage({ metrics, history, deviceInfo }) {
   const pageRef = useRef(null)
 
   useEffect(() => {
     pageEntrance('#monitor-page')
-    const deviceId = localStorage.getItem('voltEdge_activeDeviceId')
-    if (!deviceId) return
-
-    const fetchRealData = async () => {
-      try {
-        const res = await fetch(`http://localhost:5000/api/devices/${deviceId}/dashboard`)
-        const data = await res.json()
-        
-        if (data.device) {
-          setDeviceInfo(data.device)
-        }
-        
-        if (data.latest) {
-          const m = {
-            voltage: parseFloat(data.latest.voltage) || 0,
-            current: parseFloat(data.latest.current) || 0,
-            power: parseFloat(data.latest.power) || 0,
-            powerFactor: parseFloat(data.latest.power_factor) || 0,
-            frequency: parseFloat(data.latest.frequency) || 0,
-            status: parseFloat(data.latest.power) > ((data.device?.max_current_limit || 5) * 220) ? 'overload' : 'normal'
-          }
-          setMetrics(m)
-          setHistory(prev => {
-            const next = [...prev, m]
-            if (next.length > 20) next.shift() // Keep only last 20 points
-            return next
-          })
-        }
-      } catch (err) {
-        console.error("Failed to fetch live monitoring:", err)
-      }
-    }
-
-    fetchRealData()
-    const t = setInterval(fetchRealData, 2000)
-    return () => clearInterval(t)
   }, [])
 
   const STATUS = {
@@ -77,7 +38,8 @@ export default function MonitoringPage() {
     overload: { label: 'OVERLOAD', color: '#EF4444', bg: 'rgba(239,68,68,0.12)' },
     smoke:    { label: 'ASAP',     color: '#F59E0B', bg: 'rgba(245,158,11,0.12)' },
   }
-  const sc = STATUS[metrics.status] || STATUS.normal
+  const status = metrics.power > ((deviceInfo?.max_current_limit || 5) * 220) ? 'overload' : 'normal'
+  const sc = STATUS[status] || STATUS.normal
 
   const sparkOpts = (color) => ({
     chart: { type: 'line', background: 'transparent', toolbar: { show: false }, sparkline: { enabled: true }, animations: { enabled: true, dynamicAnimation: { enabled: true, speed: 600 } } },

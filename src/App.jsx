@@ -1,34 +1,69 @@
 import { useState, useEffect, useRef } from 'react'
-import { AlertTriangle, X, Check, XCircle } from 'lucide-react'
+import mqtt from 'mqtt'
+import { AlertTriangle, X, Check, XCircle, Loader2 } from 'lucide-react'
 import Sidebar from './components/layout/Sidebar'
 import Topbar  from './components/layout/Topbar'
-import DeviceSelectPage  from './pages/DeviceSelectPage'
-import LoginPage         from './pages/LoginPage'
-import RegisterPage      from './pages/RegisterPage'
 import DashboardPage     from './pages/DashboardPage'
 import MonitoringPage    from './pages/MonitoringPage'
 import HistoryPage       from './pages/HistoryPage'
 import NotificationsPage from './pages/NotificationsPage'
 import SettingsPage      from './pages/SettingsPage'
-import { NOTIFICATIONS_DATA } from './utils/mockData'
-
-const PUBLIC = ['login', 'register']
-const API    = 'http://localhost:5000'
-
 export default function App() {
-  const [isAuth,    setIsAuth]    = useState(() => localStorage.getItem('voltEdge_isAuth') === 'true')
-  const [page,      setPage]      = useState(() => {
-    if (localStorage.getItem('voltEdge_isAuth') !== 'true') return 'login'
-    return localStorage.getItem('voltEdge_activePage') || 'devices'
-  })
+  const [page,      setPage]      = useState('dashboard')
   const [collapsed, setCollapsed] = useState(false)
-  const [notifs,    setNotifs]    = useState(NOTIFICATIONS_DATA)
+  const [notifs,    setNotifs]    = useState(() => {
+    const saved = localStorage.getItem('voltEdge_notifications')
+    if (saved) return JSON.parse(saved)
+    return [
+      {
+        id: 'welcome-notification',
+        type: 'info',
+        title: 'Sistem VoltEdge Aktif',
+        msg: 'Selamat datang! Sistem monitoring VoltEdge Anda siap bekerja.',
+        time: new Date().toLocaleTimeString('id-ID'),
+        read: false
+      }
+    ]
+  })
 
-  // ── Global user state — single source of truth ──
+  // ── First Run: tampilkan wizard setup jika belum pernah konfigurasi ──
+  const [firstRun, setFirstRun] = useState(() => !localStorage.getItem('voltEdge_setupDone'))
+  const [setupForm, setSetupForm] = useState({
+    max_current: localStorage.getItem('voltEdge_maxCurrent') || '',
+    price_kwh:   localStorage.getItem('voltEdge_priceKwh')   || ''
+  })
+  const [setupError, setSetupError] = useState('')
+  const [skipWaiting, setSkipWaiting] = useState(() => !!localStorage.getItem('voltEdge_setupDone'))
+
+  // ── Global Settings & Device Info (Loaded from localStorage) ──
+  const [deviceInfo, setDeviceInfo] = useState({
+    name: 'VoltEdge Panel Utama',
+    mac_address: localStorage.getItem('voltEdge_macAddress') || '20E7C8674D3C',
+    location: 'Panel Utama',
+    status: 'offline',
+    max_current_limit: parseFloat(localStorage.getItem('voltEdge_maxCurrent') || '5.0'),
+    price_per_kwh: parseFloat(localStorage.getItem('voltEdge_priceKwh') || '1444.70')
+  })
+
+  // ── Telemetry Metrics ──
+  const [metrics, setMetrics] = useState({
+    voltage: 0,
+    current: 0,
+    power: 0,
+    powerFactor: 1.0,
+    frequency: 50,
+    gas: 0,
+    relayActive: false
+  })
+
+  // ── Telemetry Logs (History) ──
+  const [logs, setLogs] = useState([])
+
+  // ── Global user state (Simulated) ──
   const [user, setUser] = useState({
-    id:    localStorage.getItem('voltEdge_userId')    || '',
-    name:  localStorage.getItem('voltEdge_userName')  || '',
-    email: localStorage.getItem('voltEdge_userEmail') || '',
+    id:    'default-user-uuid',
+    name:  'VoltEdge User',
+    email: 'admin@voltedge.com',
     photo: null,
   })
 
@@ -37,29 +72,181 @@ export default function App() {
     return window.matchMedia('(max-width: 900px)').matches || window.innerWidth <= 900
   })
 
-  // ── Fetch fresh user data dari backend saat app load ──
-  useEffect(() => {
-    const userId = localStorage.getItem('voltEdge_userId')
-    if (!userId || !isAuth) return
+  const mqttClientRef   = useRef(null)
+  const gasAlertArmed   = useRef(true)   // hysteresis: re-arm setelah gas turun ke aman
+  const [mqttConnected, setMqttConnected] = useState(false)
 
-    fetch(`${API}/api/auth/profile/${userId}`)
-      .then(r => r.json())
-      .then(data => {
-        if (data.user) {
-          const fresh = {
-            id:    data.user.id,
-            name:  data.user.name  || '',
-            email: data.user.email || '',
-            photo: data.user.photo || null,
-          }
-          // Update global state & localStorage sekaligus
-          setUser(fresh)
-          localStorage.setItem('voltEdge_userName',  fresh.name)
-          localStorage.setItem('voltEdge_userEmail', fresh.email)
+  // ── Direct Browser MQTT Connection ──
+  useEffect(() => {
+    const mac = deviceInfo.mac_address.trim().toUpperCase()
+    // HiveMQ public broker — port 8884 (WSS) lebih jarang diblokir dari port 8000 (WS)
+    const brokerUrl = `wss://broker.hivemq.com:8884/mqtt`
+
+    console.log(`[MQTT] Connecting to ${brokerUrl} | topic: voltedge/telemetry/${mac}`)
+    const client = mqtt.connect(brokerUrl, {
+      clientId:        `voltedge-web-${Math.random().toString(16).slice(2, 8)}`,
+      keepalive:       60,
+      reconnectPeriod: 3000,
+      connectTimeout:  30 * 1000,
+    })
+
+    client.on('connect', () => {
+      console.log('[MQTT] Connected directly to broker')
+      setMqttConnected(true)
+      setDeviceInfo(prev => ({ ...prev, status: 'online' }))
+      client.subscribe(`voltedge/telemetry/${mac}`)
+
+      // Auto-publish current limit to ESP32 on startup/reconnect to keep them in sync
+      const configTopic = `voltedge/config/${mac}`
+      const configVal = String(parseFloat(localStorage.getItem('voltEdge_maxCurrent') || '5.0'))
+      client.publish(configTopic, configVal, { retain: true })
+      console.log(`[MQTT] Auto-published current limit: ${configVal}A to ${configTopic}`)
+    })
+
+    client.on('message', (topic, message) => {
+      try {
+        const payload = JSON.parse(message.toString())
+        
+        const newMetrics = {
+          voltage: parseFloat(payload.voltage || 0),
+          current: parseFloat(payload.current || 0),
+          power: parseFloat(payload.power || 0),
+          powerFactor: parseFloat(payload.pf || payload.powerFactor || 1.0),
+          frequency: parseFloat(payload.frequency || 50),
+          gas: parseInt(payload.gas || 0),
+          relayActive: payload.relay === 'true' || payload.relay === true,
+          alertType: payload.alert || ''
         }
-      })
-      .catch(() => {}) // Fail silently, gunakan data cache
-  }, [isAuth])
+
+        setMetrics(newMetrics)
+        setDeviceInfo(prev => ({ ...prev, status: 'online' }))
+
+        // Create log entry for charts and table
+        const newLogEntry = {
+          id: Date.now() + Math.random().toString(),
+          time: new Date().toLocaleTimeString('id-ID'),
+          voltage: newMetrics.voltage,
+          current: newMetrics.current,
+          power: newMetrics.power,
+          energy: parseFloat(payload.energy || 0),
+          powerFactor: newMetrics.powerFactor,
+          frequency: newMetrics.frequency,
+          gas: newMetrics.gas,
+          status: newMetrics.power > (deviceInfo.max_current_limit * 220) ? 'Overload' : 'Normal'
+        }
+
+        setLogs(prev => {
+          const next = [newLogEntry, ...prev]
+          if (next.length > 25) next.pop()
+          return next
+        })
+
+        // Check for alerts
+        const isOverload   = newMetrics.alertType === 'overload' || (newMetrics.current > deviceInfo.max_current_limit)
+        const isGasDanger  = newMetrics.alertType === 'gas' || (newMetrics.gas >= 2000)
+        // Fallback: relay diputus ESP32 tapi web tidak tahu kenapa (gas disarm / edge case)
+        const isRelayTrip  = !newMetrics.relayActive && newMetrics.voltage < 1 && !isGasDanger && !isOverload
+
+        // Hysteresis: re-arm gas alert setelah gas turun ke level aman
+        if (!gasAlertArmed.current && newMetrics.gas < 1500) {
+          gasAlertArmed.current = true
+          console.log('[GAS] Sensor gas re-armed (gas sudah turun ke aman)')
+        }
+
+        if (isGasDanger && gasAlertArmed.current) {
+          setGlobalAlert(prev => {
+            if (!prev) {
+              addNotification('Bahaya Asap/Gas!', `MQ-2 nilai ${newMetrics.gas}. Relay diputus!`, 'danger')
+              return {
+                type: 'gas',
+                title: 'ASAP/GAS BERBAHAYA!',
+                msg: `MQ-2 mendeteksi bahaya gas/asap (nilai: ${newMetrics.gas}). Relay telah diputus.`,
+                time: new Date().toLocaleTimeString('id-ID')
+              }
+            }
+            return prev
+          })
+        } else if (isOverload) {
+          setGlobalAlert(prev => {
+            if (!prev) {
+              addNotification('Overload Terdeteksi', `Arus ${newMetrics.current.toFixed(2)}A melebihi batas ${deviceInfo.max_current_limit}A.`, 'danger')
+              return {
+                type: 'overload',
+                title: 'OVERLOAD TERDETEKSI!',
+                msg: `Arus listrik terdeteksi tinggi (${newMetrics.current.toFixed(2)}A). Relay telah diputus otomatis.`,
+                time: new Date().toLocaleTimeString('id-ID')
+              }
+            }
+            return prev
+          })
+        } else if (isRelayTrip) {
+          // Fallback alert: relay diputus, semua 0 — paksa re-arm gas dan tampilkan alert
+          gasAlertArmed.current = true
+          setGlobalAlert(prev => {
+            if (!prev) {
+              addNotification('Daya Terputus!', 'Relay ESP32 diputus — semua nilai 0. Periksa sensor.', 'danger')
+              return {
+                type: 'gas',  // pakai tipe gas agar sticky (harus klik OK)
+                title: 'DAYA TERPUTUS!',
+                msg: `Relay ESP32 diputus dan semua nilai menjadi 0. Kemungkinan gas/asap terdeteksi. MQ-2: ${newMetrics.gas}. Periksa perangkat!`,
+                time: new Date().toLocaleTimeString('id-ID')
+              }
+            }
+            return prev
+          })
+        } else {
+          // Gas alert: sticky — tidak hilang sampai user klik OK
+          // Overload alert: auto-clear saat kondisi normal
+          setGlobalAlert(prev => {
+            if (!prev) return null
+            if (prev.type === 'gas') return prev  // gas tetap tampil
+            return null  // overload hilang otomatis
+          })
+          setShowConfirm(false)
+          setUserChecked(false)
+        }
+
+      } catch (err) {
+        console.error('[MQTT] Message parsing error:', err)
+      }
+    })
+
+    client.on('close', () => {
+      console.log('[MQTT] Connection closed')
+      setMqttConnected(false)
+      setDeviceInfo(prev => ({ ...prev, status: 'offline' }))
+    })
+
+    mqttClientRef.current = client
+
+    return () => {
+      if (client) {
+        client.end()
+      }
+    }
+  }, [deviceInfo.mac_address])
+
+  // ── Settings Update Callback ──
+  const handleUpdateSettings = (newSettings) => {
+    localStorage.setItem('voltEdge_macAddress', newSettings.mac_address)
+    localStorage.setItem('voltEdge_maxCurrent', newSettings.max_current_limit.toString())
+    localStorage.setItem('voltEdge_priceKwh', newSettings.price_per_kwh.toString())
+
+    setDeviceInfo(prev => ({
+      ...prev,
+      mac_address: newSettings.mac_address,
+      max_current_limit: newSettings.max_current_limit,
+      price_per_kwh: newSettings.price_per_kwh
+    }))
+
+    // Publish threshold configuration change to ESP32
+    if (mqttClientRef.current && mqttConnected) {
+      const configTopic = `voltedge/config/${newSettings.mac_address.toUpperCase()}`
+      const configVal = String(newSettings.max_current_limit)
+      mqttClientRef.current.publish(configTopic, configVal, { retain: true })
+      console.log(`[MQTT] Published new overload limit: ${configVal}A to ${configTopic}`)
+    }
+  }
 
   // ── Global Alert System ──
   const [globalAlert, setGlobalAlert] = useState(null)
@@ -68,13 +255,10 @@ export default function App() {
   const alarmRef = useRef(null)
 
   const playAlarm = () => {
-    // Selalu buat instance Audio baru agar tidak ada masalah
-    // replay setelah pause pada browser modern
     if (!alarmRef.current) {
       alarmRef.current = new Audio('/assets/alarm.mp3')
       alarmRef.current.loop = true
     }
-    // Reset ke awal sebelum play, hindari NotAllowedError pada replay
     alarmRef.current.currentTime = 0
     alarmRef.current.play().catch((err) => {
       console.warn("Autoplay audio diblokir browser:", err)
@@ -84,64 +268,17 @@ export default function App() {
     if (alarmRef.current) {
       alarmRef.current.pause()
       alarmRef.current.currentTime = 0
-      // ← Null-kan ref agar instance baru dibuat saat alert berikutnya
-      // Ini mencegah browser menolak .play() pada instance bekas pause()
       alarmRef.current = null
     }
   }
 
   useEffect(() => {
-    // showConfirm TIDAK ikut kondisi — alarm tetap bunyi saat dialog
-    // konfirmasi terbuka. Hanya userChecked yang matikan alarm.
     if (globalAlert && !userChecked) {
       playAlarm()
     } else {
       stopAlarm()
     }
   }, [globalAlert, userChecked])
-
-  useEffect(() => {
-    if (!isAuth) return
-    const pollAlerts = async () => {
-      const deviceId = localStorage.getItem('voltEdge_activeDeviceId')
-      if (!deviceId) return
-      try {
-        const res = await fetch(`${API}/api/devices/${deviceId}/alerts`)
-        const data = await res.json()
-        if (data.alertState) {
-          const { gas, current, relayActive } = data.alertState
-          const limit = data.limit || 5
-          const gasVal = parseInt(gas || 0)
-          const currVal = parseFloat(current || 0)
-          
-          const isDanger = relayActive || gasVal >= 3000 || currVal > limit
-          
-          if (isDanger) {
-             const type = (gasVal >= 3000 || (relayActive && gasVal > 2000)) ? 'gas' : 'overload'
-             setGlobalAlert(prev => {
-                if (!prev) {
-                  return { 
-                    type, 
-                    title: type === 'gas' ? 'ASAP/GAS BERBAHAYA!' : 'OVERLOAD TERDETEKSI!', 
-                    msg: type === 'gas' ? `MQ-2 mendeteksi bahaya gas/asap (nilai: ${gasVal}). Relay telah diputus.` : `Arus listrik terdeteksi tinggi. Relay telah diputus otomatis.`, 
-                    time: new Date().toLocaleTimeString('id-ID') 
-                  }
-                }
-                return prev
-             })
-          } else {
-             // Hardware normal
-             setGlobalAlert(null)
-             setShowConfirm(false)
-             setUserChecked(false)
-             stopAlarm()
-          }
-        }
-      } catch (err) {}
-    }
-    const interval = setInterval(pollAlerts, 2000)
-    return () => clearInterval(interval)
-  }, [isAuth])
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.matchMedia('(max-width: 900px)').matches || window.innerWidth <= 900)
@@ -152,62 +289,334 @@ export default function App() {
   const addNotification = (title, msg, type = 'info') => {
     setNotifs(prev => [{
       id: Date.now() + Math.random().toString(),
-      title, msg, time: 'Baru saja', type, read: false
+      title, msg, time: new Date().toLocaleTimeString('id-ID'), type, read: false
     }, ...prev])
   }
 
+  useEffect(() => {
+    localStorage.setItem('voltEdge_notifications', JSON.stringify(notifs))
+  }, [notifs])
+
   const navigate = (p) => {
-    if (!PUBLIC.includes(p) && !isAuth) {
-      localStorage.setItem('voltEdge_activePage', 'login')
-      setPage('login')
-      return
-    }
-    localStorage.setItem('voltEdge_activePage', p)
     setPage(p)
-  }
-
-  // ── Dipanggil LoginPage/RegisterPage setelah sukses ──
-  const handleLoginSuccess = (userData) => {
-    const u = {
-      id:    userData.id    || localStorage.getItem('voltEdge_userId')    || '',
-      name:  userData.name  || localStorage.getItem('voltEdge_userName')  || '',
-      email: userData.email || localStorage.getItem('voltEdge_userEmail') || '',
-      photo: userData.photo || null,
-    }
-    setUser(u)
-    localStorage.setItem('voltEdge_isAuth',    'true')
-    localStorage.setItem('voltEdge_userId',    u.id)
-    localStorage.setItem('voltEdge_userName',  u.name)
-    localStorage.setItem('voltEdge_userEmail', u.email)
-    setIsAuth(true)
-    navigate('devices')
-  }
-
-  // ── Dipanggil Settings/Profile page saat update berhasil ──
-  const updateUser = (updater) => {
-    setUser(prev => {
-      const next = typeof updater === 'function' ? updater(prev) : updater
-      if (next.name  !== undefined) localStorage.setItem('voltEdge_userName',  next.name)
-      if (next.email !== undefined) localStorage.setItem('voltEdge_userEmail', next.email)
-      return next
-    })
   }
 
   const unread = notifs.filter(n => !n.read).length
 
-  // ── Public pages (no layout) ──
-  if (PUBLIC.includes(page)) {
+  // Calculate costs based on last live energy value and baselines stored in localStorage
+  const latestEnergy = logs.length > 0 ? logs[0].energy : 0
+
+  const getBaselineEnergy = (currentEnergy) => {
+    const todayStr = new Date().toLocaleDateString('id-ID'); // e.g. "9/6/2026"
+    const monthStr = new Date().getMonth() + '-' + new Date().getFullYear(); // e.g. "5-2026"
+
+    let storedDay = localStorage.getItem('voltEdge_baselineDayDate');
+    let storedDayKwh = localStorage.getItem('voltEdge_baselineDayKwh');
+    let storedMonth = localStorage.getItem('voltEdge_baselineMonthDate');
+    let storedMonthKwh = localStorage.getItem('voltEdge_baselineMonthKwh');
+
+    const currentEnergyNum = parseFloat(currentEnergy || 0);
+
+    // Day check & self-healing (if counter reset or baseline > current)
+    if (!storedDay || storedDay !== todayStr || !storedDayKwh || parseFloat(storedDayKwh) > currentEnergyNum) {
+      localStorage.setItem('voltEdge_baselineDayDate', todayStr);
+      localStorage.setItem('voltEdge_baselineDayKwh', currentEnergyNum.toString());
+      storedDayKwh = currentEnergyNum.toString();
+    }
+
+    // Month check & self-healing
+    if (!storedMonth || storedMonth !== monthStr || !storedMonthKwh || parseFloat(storedMonthKwh) > currentEnergyNum) {
+      localStorage.setItem('voltEdge_baselineMonthDate', monthStr);
+      localStorage.setItem('voltEdge_baselineMonthKwh', currentEnergyNum.toString());
+      storedMonthKwh = currentEnergyNum.toString();
+    }
+
+    const dayBaseline = parseFloat(storedDayKwh);
+    const monthBaseline = parseFloat(storedMonthKwh);
+
+    const dailyKwh = Math.max(0, currentEnergyNum - dayBaseline);
+    const monthlyKwh = Math.max(0, currentEnergyNum - monthBaseline);
+
+    return { dailyKwh, monthlyKwh };
+  }
+
+  const { dailyKwh, monthlyKwh } = getBaselineEnergy(latestEnergy);
+  const costToday = dailyKwh * deviceInfo.price_per_kwh;
+
+
+  // ── Handler: simpan setup awal ──
+  const handleSetupSubmit = () => {
+    const amp  = parseFloat(setupForm.max_current)
+    const tarif = parseFloat(setupForm.price_kwh)
+    if (!setupForm.max_current || isNaN(amp) || amp <= 0)
+      return setSetupError('Masukkan batas arus yang valid (contoh: 5)')
+    if (!setupForm.price_kwh || isNaN(tarif) || tarif <= 0)
+      return setSetupError('Masukkan tarif listrik yang valid (contoh: 1444.70)')
+    localStorage.setItem('voltEdge_maxCurrent', amp.toString())
+    localStorage.setItem('voltEdge_priceKwh',   tarif.toString())
+    localStorage.setItem('voltEdge_setupDone',  'true')
+    setDeviceInfo(prev => ({ ...prev, max_current_limit: amp, price_per_kwh: tarif }))
+    setFirstRun(false)
+    setSetupError('')
+
+    // Publish initial limit to ESP32
+    if (mqttClientRef.current && mqttConnected) {
+      const configTopic = `voltedge/config/${deviceInfo.mac_address.toUpperCase()}`
+      const configVal = String(amp)
+      mqttClientRef.current.publish(configTopic, configVal, { retain: true })
+      console.log(`[MQTT] Published initial limit: ${configVal}A to ${configTopic}`)
+    }
+  }
+
+  // ── WIZARD SETUP — Hanya tampil pertama kali ──
+  if (firstRun) {
+    const inp = {
+      width: '100%', padding: '12px 14px', borderRadius: 10, fontSize: 14, fontWeight: 500,
+      background: 'rgba(15,23,42,0.8)', border: '1px solid rgba(56,189,248,0.2)',
+      color: '#F1F5F9', outline: 'none', boxSizing: 'border-box',
+      transition: 'border-color 0.2s'
+    }
     return (
-      <>
-        {page === 'login'    && <LoginPage    setPage={navigate} onLogin={handleLoginSuccess} />}
-        {page === 'register' && <RegisterPage setPage={navigate} onRegister={handleLoginSuccess} />}
-      </>
+      <div style={{
+        minHeight: '100vh', backgroundColor: '#020617',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 20, fontFamily: "'Inter', system-ui, sans-serif"
+      }}>
+        {/* Background glow */}
+        <div style={{
+          position: 'fixed', inset: 0, pointerEvents: 'none',
+          background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(56,189,248,0.12) 0%, transparent 70%)'
+        }} />
+
+        <div style={{
+          width: '100%', maxWidth: 460, position: 'relative', zIndex: 1,
+          animation: 'fadeUp 0.5s cubic-bezier(0.16,1,0.3,1)'
+        }}>
+          {/* Logo / Brand */}
+          <div style={{ textAlign: 'center', marginBottom: 32 }}>
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              width: 64, height: 64, borderRadius: 18,
+              background: 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(34,211,238,0.1))',
+              border: '1px solid rgba(56,189,248,0.3)',
+              marginBottom: 16, fontSize: 28
+            }}></div>
+            <h1 style={{ fontSize: 26, fontWeight: 900, color: '#F1F5F9', margin: '0 0 6px', letterSpacing: '-0.03em' }}>
+              Selamat Datang di <span style={{ color: '#38BDF8' }}>VoltEdge</span>
+            </h1>
+            <p style={{ fontSize: 13, color: '#64748B', margin: 0, lineHeight: 1.6 }}>
+              Sistem monitoring listrik IoT berbasis ESP32.<br/>Atur konfigurasi dasar sebelum memulai.
+            </p>
+          </div>
+
+          {/* Card */}
+          <div style={{
+            background: 'linear-gradient(160deg, rgba(15,23,42,0.95), rgba(7,12,30,0.98))',
+            border: '1px solid rgba(56,189,248,0.15)',
+            borderRadius: 20, overflow: 'hidden',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(56,189,248,0.08)'
+          }}>
+            {/* Top accent bar */}
+            <div style={{ height: 3, background: 'linear-gradient(90deg, #38BDF8, #22D3EE, #38BDF8)', backgroundSize: '200%', animation: 'shimmer 3s linear infinite' }} />
+
+            <div style={{ padding: '28px 28px 24px' }}>
+              {/* Step 1 — Batas Arus */}
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#38BDF8', marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                   Batas Arus Maksimum
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="number" min="0.1" step="0.1"
+                    placeholder="Contoh: 5"
+                    value={setupForm.max_current}
+                    onChange={e => { setSetupForm(p => ({ ...p, max_current: e.target.value })); setSetupError('') }}
+                    style={inp}
+                    onFocus={e => e.target.style.borderColor = 'rgba(56,189,248,0.6)'}
+                    onBlur={e => e.target.style.borderColor = 'rgba(56,189,248,0.2)'}
+                  />
+                  <span style={{
+                    position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+                    fontSize: 12, fontWeight: 700, color: '#38BDF8'
+                  }}>A</span>
+                </div>
+                <p style={{ fontSize: 11, color: '#475569', marginTop: 6, lineHeight: 1.5 }}>
+                  Relay &amp; buzzer akan aktif otomatis jika arus melebihi nilai ini.
+                </p>
+              </div>
+
+              {/* Step 2 — Tarif Listrik */}
+              <div style={{ marginBottom: 24 }}>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#22D3EE', marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                   Tarif Dasar Listrik
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <span style={{
+                    position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
+                    fontSize: 12, fontWeight: 700, color: '#22D3EE'
+                  }}>Rp</span>
+                  <input
+                    type="number" min="0" step="0.01"
+                    placeholder="Contoh: 1444.70"
+                    value={setupForm.price_kwh}
+                    onChange={e => { setSetupForm(p => ({ ...p, price_kwh: e.target.value })); setSetupError('') }}
+                    style={{ ...inp, paddingLeft: 38 }}
+                    onFocus={e => e.target.style.borderColor = 'rgba(34,211,238,0.6)'}
+                    onBlur={e => e.target.style.borderColor = 'rgba(56,189,248,0.2)'}
+                  />
+                  <span style={{
+                    position: 'absolute', right: 14, top: '50%', transform: 'translateY(-50%)',
+                    fontSize: 12, fontWeight: 700, color: '#22D3EE'
+                  }}>/kWh</span>
+                </div>
+                <p style={{ fontSize: 11, color: '#475569', marginTop: 6, lineHeight: 1.5 }}>
+                  Digunakan untuk estimasi biaya listrik harian. (PLN: Rp 1.444,70/kWh)
+                </p>
+              </div>
+
+              {/* Error */}
+              {setupError && (
+                <div style={{
+                  background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+                  borderRadius: 10, padding: '10px 14px', marginBottom: 16,
+                  fontSize: 12, color: '#FCA5A5', display: 'flex', alignItems: 'center', gap: 8
+                }}>
+                  <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+                  {setupError}
+                </div>
+              )}
+
+              {/* Submit */}
+              <button
+                onClick={handleSetupSubmit}
+                style={{
+                  width: '100%', padding: '14px 0', borderRadius: 12, border: 'none',
+                  background: 'linear-gradient(135deg, #38BDF8, #22D3EE)',
+                  color: '#020617', fontWeight: 800, fontSize: 14,
+                  cursor: 'pointer', letterSpacing: '0.02em',
+                  boxShadow: '0 0 24px rgba(56,189,248,0.35)',
+                  transition: 'transform 0.15s, box-shadow 0.15s'
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 0 32px rgba(56,189,248,0.5)' }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 24px rgba(56,189,248,0.35)' }}
+              >
+                 Mulai Monitoring
+              </button>
+            </div>
+          </div>
+
+          {/* Footer note */}
+          <p style={{ textAlign: 'center', fontSize: 11, color: '#334155', marginTop: 16 }}>
+            Pengaturan dapat diubah kapan saja di halaman Settings.
+          </p>
+        </div>
+
+        <style>{`
+          @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes shimmer {
+            from { background-position: 200% center; }
+            to   { background-position: -200% center; }
+          }
+        `}</style>
+      </div>
     )
   }
 
-  // ── No-Layout Protected Pages ──
-  if (page === 'devices') {
-    return <DeviceSelectPage setPage={navigate} user={user} />
+  // ── CONNECTING SCREEN — Menunggu data pertama dari ESP32 ──
+  if (logs.length === 0 && !skipWaiting) {
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        height: '100vh', backgroundColor: '#020617', gap: 20,
+        fontFamily: "'Inter', system-ui, sans-serif"
+      }}>
+        {/* Glow background */}
+        <div style={{
+          position: 'fixed', inset: 0, pointerEvents: 'none',
+          background: 'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(56,189,248,0.08) 0%, transparent 70%)'
+        }} />
+
+        {/* Spinning ring */}
+        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{
+            position: 'absolute', width: 90, height: 90, borderRadius: '50%',
+            border: '2px solid rgba(56,189,248,0.15)',
+            animation: 'ringPulse 1.8s ease-out infinite'
+          }} />
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'rgba(56,189,248,0.08)',
+            border: '1px solid rgba(56,189,248,0.25)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <Loader2 size={28} style={{ color: '#38BDF8', animation: 'spin 1s linear infinite' }} />
+          </div>
+        </div>
+
+        {/* Text */}
+        <div style={{ textAlign: 'center', padding: '0 24px', maxWidth: 380 }}>
+          <h3 style={{ color: '#F1F5F9', fontSize: 18, fontWeight: 800, margin: '0 0 10px', letterSpacing: '-0.02em' }}>
+            Menunggu Sinyal ESP32...
+          </h3>
+          <p style={{ color: '#64748B', fontSize: 13, margin: '0 0 6px', lineHeight: 1.6 }}>
+            Pastikan ESP32 kamu <strong style={{ color: '#94A3B8' }}>sudah menyala</strong> dan terhubung ke WiFi.
+          </p>
+          <p style={{ color: '#334155', fontSize: 11, margin: 0 }}>
+            Data akan tampil otomatis saat perangkat mulai mengirim.
+          </p>
+        </div>
+
+        {/* Config summary */}
+        <div style={{
+          background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(56,189,248,0.1)',
+          borderRadius: 14, padding: '14px 22px',
+          display: 'flex', gap: 28, flexWrap: 'wrap', justifyContent: 'center'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 11, color: '#475569', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>Batas Arus</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: '#38BDF8' }}>{deviceInfo.max_current_limit}<span style={{ fontSize: 12, color: '#64748B', marginLeft: 2 }}>A</span></div>
+          </div>
+          <div style={{ width: 1, background: 'rgba(255,255,255,0.06)', alignSelf: 'stretch' }} />
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 11, color: '#475569', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 4 }}>Tarif Listrik</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: '#22D3EE' }}>Rp {deviceInfo.price_per_kwh.toLocaleString('id-ID')}<span style={{ fontSize: 11, color: '#64748B', marginLeft: 2 }}>/kWh</span></div>
+          </div>
+        </div>
+
+        {/* Skip button */}
+        <button
+          onClick={() => setSkipWaiting(true)}
+          style={{
+            padding: '10px 28px', borderRadius: 10, fontSize: 13, fontWeight: 700,
+            background: 'linear-gradient(135deg, #38BDF8, #22D3EE)',
+            border: 'none', color: '#020617', cursor: 'pointer',
+            boxShadow: '0 0 20px rgba(56,189,248,0.3)',
+            transition: 'transform 0.15s, box-shadow 0.15s'
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 0 28px rgba(56,189,248,0.5)' }}
+          onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 0 20px rgba(56,189,248,0.3)' }}
+        >
+          Masuk ke Dashboard
+        </button>
+        <p style={{ fontSize: 11, color: '#334155', margin: 0 }}>
+          ESP32 belum konek? Dashboard tetap bisa dibuka, data masuk otomatis nanti.
+        </p>
+
+        <style>{`
+          @keyframes ringPulse {
+            0%   { transform: scale(0.85); opacity: 0.8; }
+            100% { transform: scale(1.7);  opacity: 0; }
+          }
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to   { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    )
   }
 
   // ── Protected app shell ──
@@ -386,7 +795,20 @@ export default function App() {
                       </div>
                       <div style={{ display: 'flex', gap: 10 }}>
                         <button
-                          onClick={() => { setUserChecked(true); setShowConfirm(false) }}
+                          onClick={() => {
+                            // Disarm gas alert (hysteresis) — tidak re-trigger sampai gas turun ke aman dulu
+                            gasAlertArmed.current = false
+                            setGlobalAlert(null)
+                            setUserChecked(true)
+                            setShowConfirm(false)
+
+                            // Publish remote reset command to ESP32 via MQTT
+                            if (mqttClientRef.current && mqttConnected) {
+                              const resetTopic = `voltedge/reset/${deviceInfo.mac_address.toUpperCase()}`
+                              mqttClientRef.current.publish(resetTopic, "reset")
+                              console.log(`[MQTT] Published remote reset command to ${resetTopic}`)
+                            }
+                          }}
                           style={{
                             flex: 1, padding: '12px 0', borderRadius: 12,
                             border: `1px solid ${accentBdr}`,
@@ -464,11 +886,11 @@ export default function App() {
         <Topbar page={page} setPage={navigate} notifCount={unread} user={user} />
 
         <main style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: isMobile ? '1rem' : '1.25rem 1.5rem', scrollBehavior: 'smooth' }}>
-          {page === 'dashboard'     && <DashboardPage addNotification={addNotification} />}
-          {page === 'monitoring'    && <MonitoringPage />}
-          {page === 'history'       && <HistoryPage />}
+          {page === 'dashboard'     && <DashboardPage addNotification={addNotification} metrics={metrics} logs={logs} deviceInfo={deviceInfo} costToday={costToday} dailyKwh={dailyKwh} monthlyKwh={monthlyKwh} latestEnergy={latestEnergy} />}
+          {page === 'monitoring'    && <MonitoringPage metrics={metrics} history={logs} deviceInfo={deviceInfo} />}
+          {page === 'history'       && <HistoryPage logs={logs} />}
           {page === 'notifications' && <NotificationsPage notifs={notifs} setNotifs={setNotifs} />}
-          {page === 'settings'      && <SettingsPage user={user} onUpdateUser={updateUser} />}
+          {page === 'settings'      && <SettingsPage deviceInfo={deviceInfo} onUpdateSettings={handleUpdateSettings} />}
         </main>
       </div>
     </div>

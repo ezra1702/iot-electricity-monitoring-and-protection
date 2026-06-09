@@ -50,37 +50,57 @@ mqttClient.on('message', async (topic, message) => {
     const macAddress = topic.split('/').pop();
     
     // Cari device berdasarkan mac_address
-    const [devices] = await db.execute('SELECT id FROM devices WHERE mac_address = ?', [macAddress]);
+    let [devices] = await db.execute('SELECT id FROM devices WHERE mac_address = ?', [macAddress]);
+    let deviceId;
+    
     if (devices.length > 0) {
-      const deviceId = devices[0].id;
-      // Masukkan ke tabel sensor_data
-      await db.execute(`
-        INSERT INTO sensor_data (device_id, voltage, current, power, energy, frequency, power_factor)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `, [
-        deviceId,
-        payload.voltage      || 0,
-        payload.current      || 0,
-        payload.power        || 0,
-        payload.energy       || 0,
-        payload.frequency    || 50,
-        payload.power_factor || 1.0
-      ]);
-
-      // Simpan status relay & gas di RAM (tidak perlu kolom SQL baru!)
-      deviceAlertState.set(deviceId, {
-        relayActive: !!payload.relayActive,
-        gas:         payload.gas || 0,
-        current:     payload.current || 0,
-        updatedAt:   Date.now()
-      });
-
-      console.log(`[MQTT] Data saved for device ${deviceId} | relay=${payload.relayActive} gas=${payload.gas}`);
+      deviceId = devices[0].id;
     } else {
-      // ALAT BELUM TERDAFTAR! 
-      // Masukkan ke memori Auto-Discovery agar bisa di-scan oleh Frontend
-      discoveredDevices.set(macAddress, Date.now());
+      // Auto-register device under default user!
+      const defaultUserUuid = 'default-user-uuid';
+      
+      // Pastikan default user ada di DB terlebih dahulu
+      const [users] = await db.execute('SELECT id FROM users WHERE id = ?', [defaultUserUuid]);
+      if (users.length === 0) {
+        await db.execute(
+          'INSERT INTO users (id, name, email, password_hash) VALUES (?, ?, ?, ?)',
+          [defaultUserUuid, 'VoltEdge User', 'admin@voltedge.com', '$2a$12$7kP2LwR.V2.X4UvUeM/qOO6v8u70WnCgLecy78jWd/2oGg/K5PReO'] // default password 'admin123'
+        );
+      }
+      
+      deviceId = uuidv4();
+      await db.execute(
+        'INSERT INTO devices (id, user_id, mac_address, name, location, status, max_current_limit, price_per_kwh) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [deviceId, defaultUserUuid, macAddress, `VoltEdge Panel (${macAddress})`, 'Panel Utama', 'online', 5.0, 1444.70]
+      );
+      console.log(`[MQTT] Auto-registered device ${macAddress} under default user.`);
     }
+
+    // Masukkan ke tabel sensor_data
+    await db.execute(`
+      INSERT INTO sensor_data (device_id, voltage, current, power, energy, frequency, power_factor, gas, relay_active)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      deviceId,
+      payload.voltage      || 0,
+      payload.current      || 0,
+      payload.power        || 0,
+      payload.energy       || 0,
+      payload.frequency    || 50,
+      payload.power_factor || 1.0,
+      payload.gas          || 0,
+      payload.relayActive ? 1 : 0
+    ]);
+
+    // Simpan status relay & gas di RAM (tidak perlu kolom SQL baru!)
+    deviceAlertState.set(deviceId, {
+      relayActive: !!payload.relayActive,
+      gas:         payload.gas || 0,
+      current:     payload.current || 0,
+      updatedAt:   Date.now()
+    });
+
+    console.log(`[MQTT] Data saved for device ${deviceId} | relay=${payload.relayActive} gas=${payload.gas}`);
   } catch (error) {
     console.error('[MQTT] Error parsing/saving message:', error);
   }

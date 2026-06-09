@@ -5,9 +5,12 @@
 
 // ===== LIBRARY WIFI & MQTT =====
 #include <WiFi.h>
-#include <WiFiManager.h>
 #include <PubSubClient.h>
-#include <my_qrcode.h>
+
+// ===== CONFIGURATIONS =====
+#define WIFI_SSID       "X"
+#define WIFI_PASSWORD   "x12345678"
+#define DASHBOARD_URL   "localhost:3000"
 
 // ===== FREERTOS =====
 #include <freertos/FreeRTOS.h>
@@ -16,7 +19,7 @@
 #include <esp_task_wdt.h>
 
 // ===== KONFIGURASI MQTT =====
-const char* mqtt_server = "192.168.1.5";
+const char* mqtt_server = "broker.hivemq.com";
 const int mqtt_port = 1883;
 
 WiFiClient espClient;
@@ -27,14 +30,33 @@ String telemetryTopic = "";
 String configTopic = "";
 
 // ===== PIN DEFINITION =====
+// (Sesuai skematik EasyEDA — ESP32 DEVKITV1)
 #define SCREEN_WIDTH  128
 #define SCREEN_HEIGHT  64
+
+// PZEM-004T → Socket PZEM (JST-XH2.54 4P)
+// ESP32 RX2 ← PZEM TX  (D16)
+// ESP32 TX2 → PZEM RX  (D17)
 #define RXD2          16
 #define TXD2          17
+
+// MQ-2 Gas Sensor → Socket SENSORMQ2 (JST-XH2.54 3P)
+// Analog output → D33  (ADC1_CH5 — bebas noise WiFi)
 #define MQ2_PIN       33
-#define RELAY_PIN     23
+
+// Relay (via Logic Shifter + PC817 optocoupler) → D25
+#define RELAY_PIN     25
+
+// Buzzer BZ1 → Socket BUZZER → D19
 #define BUZZER_PIN    19
+
+// Reset Button KEY1 → D18
 #define BUTTON_PIN    18
+
+// OLED SSD1306 → Socket OLED (JST-XH2.54 4P)
+// SDA → D21 | SCK → D22
+#define OLED_SDA      21
+#define OLED_SCL      22
 
 // ===== THRESHOLD & TIMING =====
 #define GAS_THRESHOLD           3000
@@ -75,7 +97,7 @@ TaskHandle_t TaskUIHandle;
 
 // ===== PZEM DATA & OVERLOAD =====
 float voltage = 0, current = 0, power = 0;
-float energy = 0, frequency = 0, pf = 0;
+float energy = 0, pf = 0;
 float currentThreshold = 5.0;
 int overloadCount = 0;
 String alertReason = "";
@@ -278,7 +300,7 @@ void drawSystemReady() {
 void drawData() {
   if (dataMutex != NULL) xSemaphoreTake(dataMutex, portMAX_DELAY);
   float v = voltage, c = current, p = power;
-  float e = energy, f = frequency, pfv = pf;
+  float e = energy, pfv = pf;
   int g = gasAvg;
   xSemaphoreGive(dataMutex);
 
@@ -288,7 +310,7 @@ void drawData() {
 
   display.setTextSize(1);
   display.setCursor(0, 0);
-  display.println("ENERGY MONITOR  v4.2");
+  display.println("ENERGY MONITOR");
 
   display.setTextSize(2);
   display.setCursor(0, 10);
@@ -296,31 +318,21 @@ void drawData() {
   display.println(" W");
 
   display.setTextSize(1);
-  display.setCursor(0, 30);
-  display.print("V:"); display.print(v, 0); display.print("V");
-  display.setCursor(64, 30);
+  display.setCursor(0, 28);
+  display.print("V:"); display.print(v, 1); display.print("V");
+  display.setCursor(64, 28);
   display.print("I:"); display.print(c, 2); display.print("A");
 
-  display.setCursor(0, 40);
+  display.setCursor(0, 38);
   display.print("PF:"); display.print(pfv, 2);
-  display.setCursor(64, 40);
-  display.print("Hz:"); display.print(f, 0);
+  display.setCursor(64, 38);
+  display.print("Gas:"); display.print(g);
 
-  display.setCursor(0, 52);
-  display.print("Gas:");
-  display.print(g);
+  display.setCursor(0, 48);
+  display.print("Energy: "); display.print(e, 4); display.print(" kWh");
 
-  if (g > GAS_THRESHOLD) {
-    display.setCursor(72, 52);
-    display.print("!BAHAYA!");
-  } else {
-    int pct = map(g, 0, GAS_THRESHOLD, 0, 5);
-    pct = constrain(pct, 0, 5);
-    display.setCursor(68, 52);
-    display.print("[");
-    for (int b = 0; b < 5; b++) display.print(b < pct ? "#" : ".");
-    display.print("]");
-  }
+  display.setCursor(7, 57);
+  display.print(DASHBOARD_URL);
 
   display.display();
   if (i2cMutex != NULL) xSemaphoreGive(i2cMutex);
@@ -619,14 +631,13 @@ void TaskPZEM(void *pvParameters) {
 
     if (!localRelayActive) {
       float v = pzem.voltage(), i = pzem.current(), p = pzem.power();
-      float e = pzem.energy(),  f = pzem.frequency(), pfv = pzem.pf();
+      float e = pzem.energy(),  pfv = pzem.pf();
 
       xSemaphoreTake(dataMutex, portMAX_DELAY);
       voltage   = (!isnan(v)   && v > 80 && v < 260) ? v   : 0;
       current   = (!isnan(i)   && i >= 0)             ? i   : 0;
       power     = (!isnan(p)   && p >= 0)             ? p   : 0;
       energy    = (!isnan(e)   && e >= 0)             ? e   : 0;
-      frequency = (!isnan(f)   && f < 100)            ? f   : 0;
       pf        = (!isnan(pfv) && pfv <= 1)           ? pfv : 0;
       
       if (current > currentThreshold) {
@@ -643,7 +654,6 @@ void TaskPZEM(void *pvParameters) {
       serialLog("PZEM", "Voltage  : " + String(v, 1) + " V" + (v == 0 ? " ← MATI" : ""));
       serialLog("PZEM", "Current  : " + String(current, 2) + " A (Batas: " + String(localCurrentThreshold, 1) + " A)");
       serialLog("PZEM", "Power    : " + String(power, 1) + " W");
-      serialLog("PZEM", "Freq     : " + String(frequency, 1) + " Hz");
       serialLog("PZEM", "PF       : " + String(pfv, 2));
       serialLog("GAS",  "Avg      : " + String(localGasAvg));
       serialDivider('-', 56);
@@ -679,7 +689,7 @@ void TaskMQTT(void *pvParameters) {
       
       xSemaphoreTake(dataMutex, portMAX_DELAY);
       float v = voltage, c = current, p = power, e = energy;
-      float f = frequency, pfv = pf;
+      float pfv = pf;
       int g = gasAvg;
       bool r = relayActive;
       xSemaphoreGive(dataMutex);
@@ -689,7 +699,6 @@ void TaskMQTT(void *pvParameters) {
       payload += "\"current\":"      + String(c, 2) + ",";
       payload += "\"power\":"        + String(p, 1) + ",";
       payload += "\"energy\":"       + String(e, 4) + ",";
-      payload += "\"frequency\":"    + String(f, 1) + ",";
       payload += "\"power_factor\":" + String(pfv, 2) + ",";
       payload += "\"gas\":"          + String(g) + ",";
       payload += "\"relayActive\":"  + String(r ? "true" : "false");
@@ -768,48 +777,66 @@ void setup() {
   pzemSerial.begin(9600, SERIAL_8N1, RXD2, TXD2);
   serialLog("INIT", "PZEM-004T       : RX=GPIO" + String(RXD2) + " TX=GPIO" + String(TXD2));
 
-  Wire.begin(21, 22);
+  Wire.begin(OLED_SDA, OLED_SCL);
   if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
     serialLog("ERROR", "OLED GAGAL!");
     while (true) { delay(500); }
   }
   serialLog("INIT", "OLED SSD1306    : OK");
 
-  // ── WiFi + QR Code
+  // ── WiFi Connection
   if (i2cMutex != NULL) xSemaphoreTake(i2cMutex, portMAX_DELAY);
   display.clearDisplay();
-  QRCode qrcode;
-  uint8_t qrcodeData[qrcode_getBufferSize(3)];
-  qrcode_initText(&qrcode, qrcodeData, 3, 0, "WIFI:T:nopass;S:VoltEdge_ESP32;;");
-
-  int scale = 1, offsetX = 6, offsetY = 24;
-  display.fillRect(offsetX - 2, offsetY - 2, qrcode.size + 4, qrcode.size + 4, WHITE);
-  for (uint8_t y = 0; y < qrcode.size; y++) {
-    for (uint8_t x = 0; x < qrcode.size; x++) {
-      if (qrcode_getModule(&qrcode, x, y))
-        display.drawPixel(offsetX + x, offsetY + y, BLACK);
-    }
-  }
   display.setTextColor(WHITE);
   display.setTextSize(1);
-  display.setCursor(45, 0);  display.println("WIFI PAIRING");
-  display.setCursor(45, 20); display.println("1. Scan QR");
-  display.setCursor(45, 32); display.println("2. Isi Form");
-  display.setCursor(45, 44); display.println("3. Konek!");
+  display.setCursor(0, 0);
+  display.println("KONEKSI WIFI");
+  display.println();
+  display.print("SSID: ");
+  display.println(WIFI_SSID);
+  display.println("Menghubungkan...");
   display.display();
   if (i2cMutex != NULL) xSemaphoreGive(i2cMutex);
 
-  unsigned long qrShowTime = millis();
-  WiFiManager wifiManager;
-  if (!wifiManager.autoConnect("VoltEdge_ESP32")) {
-    serialLog("WIFI", "Gagal konek WiFi");
-    ESP.restart();
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  int wTimeout = 0;
+  while (WiFi.status() != WL_CONNECTED && wTimeout < 20) {
+    delay(500);
+    Serial.print(".");
+    wTimeout++;
+    if (i2cMutex != NULL) xSemaphoreTake(i2cMutex, portMAX_DELAY);
+    display.print(".");
+    display.display();
+    if (i2cMutex != NULL) xSemaphoreGive(i2cMutex);
   }
 
-  unsigned long elapsedQr = millis() - qrShowTime;
-  if (elapsedQr < 5000) delay(5000 - elapsedQr);
-
-  serialLog("WIFI", "WiFi Terhubung! IP: " + WiFi.localIP().toString());
+  if (WiFi.status() == WL_CONNECTED) {
+    serialLog("WIFI", "WiFi Terhubung! IP: " + WiFi.localIP().toString());
+    if (i2cMutex != NULL) xSemaphoreTake(i2cMutex, portMAX_DELAY);
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("WIFI TERHUBUNG!");
+    display.println();
+    display.print("IP: ");
+    display.println(WiFi.localIP());
+    display.print("MQTT: ");
+    display.println(mqtt_server);
+    display.display();
+    if (i2cMutex != NULL) xSemaphoreGive(i2cMutex);
+    delay(1500);
+  } else {
+    serialLog("WIFI", "WiFi Timeout! Menjalankan mode lokal.");
+    if (i2cMutex != NULL) xSemaphoreTake(i2cMutex, portMAX_DELAY);
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("WIFI TIMEOUT");
+    display.println();
+    display.println("Menjalankan mode");
+    display.println("lokal/tanpa internet");
+    display.display();
+    if (i2cMutex != NULL) xSemaphoreGive(i2cMutex);
+    delay(1500);
+  }
 
   macAddress     = WiFi.macAddress();
   macAddress.replace(":", "");
