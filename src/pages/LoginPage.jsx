@@ -493,11 +493,11 @@ export default function LoginPage({ setPage, onLogin }) {
           </div>
         )}
 
-        {/* ══ LEFT ══ */}
+        {}
         <div className="login-form-wrap">
           <div className="lp-form-inner">
 
-            {/* Brand */}
+            {}
             <div className="lp-brand anim-item">
               <div className="lp-brand-icon"><Zap size={20} /></div>
               <div className="lp-brand-text">
@@ -506,7 +506,7 @@ export default function LoginPage({ setPage, onLogin }) {
               </div>
             </div>
 
-            {/* Heading */}
+            {}
             <div className="lp-heading anim-item">
               <h1 className="lp-title">Selamat <span>Datang</span><br/>Kembali</h1>
               <p className="lp-subtitle">Masuk untuk memantau konsumsi energi dan keamanan sistem Anda.</p>
@@ -518,7 +518,7 @@ export default function LoginPage({ setPage, onLogin }) {
               <div className="lp-divider-line" />
             </div>
 
-            {/* Form */}
+            {}
             <form className="login-form" onSubmit={handleSubmit}>
 
               <div className="lp-field anim-item">
@@ -585,21 +585,21 @@ export default function LoginPage({ setPage, onLogin }) {
           </div>
         </div>
 
-        {/* ══ RIGHT — Energy Visualization ══ */}
+        {}
         <div className="login-hero-panel">
           <div className="lp-grid" />
           <div className="lp-orb" />
 
-          {/* Rings */}
+          {}
           <div className="lp-ring lp-ring-1" />
           <div className="lp-ring lp-ring-2" />
           <div className="lp-ring lp-ring-3" />
 
-          {/* Orbit dots */}
+          {}
           <div className="lp-orbit-dot" />
           <div className="lp-orbit-dot lp-orbit-dot-2" />
 
-          {/* Center cluster */}
+          {}
           <div className="lp-center-cluster">
             <div className="lp-main-icon">
               <Zap size={44} color="#38bdf8" strokeWidth={1.5} style={{ filter: 'drop-shadow(0 0 18px rgba(56,189,248,0.7))' }} />
@@ -607,7 +607,7 @@ export default function LoginPage({ setPage, onLogin }) {
             <span className="lp-center-label">VoltEdge System</span>
           </div>
 
-          {/* Floating stats */}
+          {}
           <div className="lp-stat lp-stat-tl">
             <div className="lp-stat-icon" style={{ background: 'rgba(56,189,248,0.12)' }}>
               <Activity size={16} color="#38bdf8" />
@@ -648,7 +648,7 @@ export default function LoginPage({ setPage, onLogin }) {
             </div>
           </div>
 
-          {/* Bottom tag */}
+          {}
           <div className="lp-tag">
             <div className="lp-tag-dot" />
             MONITORING REAL-TIME AKTIF

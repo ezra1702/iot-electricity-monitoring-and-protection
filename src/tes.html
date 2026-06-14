@@ -34,7 +34,7 @@
 </head>
 <body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 transition-colors duration-200">
 <div class="flex h-screen overflow-hidden">
-<!-- Sidebar -->
+
 <aside class="w-64 bg-slate-900 dark:bg-black flex flex-col shrink-0">
 <div class="p-6 flex items-center gap-3">
 <div class="size-10 bg-primary rounded-lg flex items-center justify-center text-white">
@@ -74,9 +74,9 @@
 </div>
 </div>
 </aside>
-<!-- Main Content -->
+
 <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
-<!-- Topbar -->
+
 <header class="h-16 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 bg-white dark:bg-background-dark sticky top-0 z-10">
 <div class="flex items-center gap-4">
 <h2 class="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Energy Monitoring Dashboard</h2>
@@ -94,7 +94,7 @@
 </div>
 </header>
 <div class="p-8 space-y-8">
-<!-- Highlighted Cost Cards -->
+
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary to-orange-600 p-8 shadow-lg shadow-primary/20 flex items-center justify-between text-white">
 <div class="relative z-10">
@@ -119,7 +119,7 @@
 <span class="material-symbols-outlined text-[120px] absolute -right-4 -bottom-4 opacity-10">calendar_month</span>
 </div>
 </div>
-<!-- Real-time Metrics Grid -->
+
 <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
 <div class="bg-white dark:bg-slate-800/40 p-5 rounded-xl border border-slate-200 dark:border-slate-800">
 <div class="flex items-center gap-3 text-slate-400 mb-2">
@@ -172,13 +172,13 @@
 </div>
 </div>
 </div>
-<!-- Gauges & Main Chart -->
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-<!-- Gauge Meters -->
+
 <div class="bg-white dark:bg-slate-800/40 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
 <h4 class="text-sm font-bold text-slate-500 uppercase tracking-widest mb-8">Analog Monitors</h4>
 <div class="flex flex-col gap-12 items-center">
-<!-- Voltage Gauge -->
+
 <div class="relative w-48 h-24 overflow-hidden">
 <svg class="w-48 h-48 gauge-svg" viewbox="0 0 100 100">
 <circle class="text-slate-100 dark:text-slate-700" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-dasharray="141.37" stroke-dashoffset="0" stroke-width="8"></circle>
@@ -189,7 +189,7 @@
 <span class="text-[10px] font-bold text-slate-400 uppercase">Voltage (V)</span>
 </div>
 </div>
-<!-- Current Gauge -->
+
 <div class="relative w-48 h-24 overflow-hidden">
 <svg class="w-48 h-48 gauge-svg" viewbox="0 0 100 100">
 <circle class="text-slate-100 dark:text-slate-700" cx="50" cy="50" fill="none" r="45" stroke="currentColor" stroke-dasharray="141.37" stroke-dashoffset="0" stroke-width="8"></circle>
@@ -202,7 +202,7 @@
 </div>
 </div>
 </div>
-<!-- Usage Chart (Simulated Recharts Area) -->
+
 <div class="lg:col-span-2 bg-white dark:bg-slate-800/40 p-6 rounded-xl border border-slate-200 dark:border-slate-800">
 <div class="flex items-center justify-between mb-8">
 <div>
@@ -215,7 +215,7 @@
 </div>
 </div>
 <div class="h-64 relative">
-<!-- Mock Chart Grid Lines -->
+
 <div class="absolute inset-0 flex flex-col justify-between opacity-10">
 <div class="border-t border-slate-900 dark:border-white w-full"></div>
 <div class="border-t border-slate-900 dark:border-white w-full"></div>
@@ -223,7 +223,7 @@
 <div class="border-t border-slate-900 dark:border-white w-full"></div>
 <div class="border-t border-slate-900 dark:border-white w-full"></div>
 </div>
-<!-- Area/Line Paths -->
+
 <svg class="absolute inset-0 h-full w-full" preserveaspectratio="none">
 <defs>
 <lineargradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
@@ -235,14 +235,14 @@
 <path d="M0 200 L50 160 L100 180 L150 120 L200 140 L250 80 L300 100 L350 40 L400 90 L450 60 L500 110 L550 50 L600 70 L650 30 L700 80 V256 H0 Z" fill="url(#grad1)"></path>
 <path d="M0 240 Q 150 220, 300 180 T 600 120 T 700 80" fill="none" stroke="#3b82f6" stroke-dasharray="8,4" stroke-width="2"></path>
 </svg>
-<!-- X Axis Labels -->
+
 <div class="absolute -bottom-6 inset-x-0 flex justify-between text-[10px] font-bold text-slate-400">
 <span>12:00</span><span>12:30</span><span>13:00</span><span>13:30</span><span>14:00</span><span>14:30</span>
 </div>
 </div>
 </div>
 </div>
-<!-- History Table -->
+
 <div class="bg-white dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
 <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
 <h4 class="text-sm font-bold text-slate-500 uppercase tracking-widest">Recent Logs</h4>

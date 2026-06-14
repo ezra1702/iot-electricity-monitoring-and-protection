@@ -28,7 +28,7 @@ export default function Topbar({ page, setPage, notifCount = 0, user }) {
         <p style={{ fontSize: 11, color: '#64748B', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{sub}</p>
       </div>
 
-      {/* Clock Panel */}
+      {}
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)', color: '#94A3B8', fontSize: 11, fontWeight: 700, fontFamily: 'monospace' }}>
         <Clock size={12} color="#38BDF8" />
         {time.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/\./g, ':')}
@@ -46,7 +46,7 @@ export default function Topbar({ page, setPage, notifCount = 0, user }) {
         )}
       </button>
 
-      {/* Profile Icon Mobile Override */}
+      {}
       <div className="gradient-electric" style={{ width: 32, height: 32, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 12, fontWeight: 700, color: '#020617', cursor: 'pointer', border: '1px solid rgba(15,23,42,0.9)', overflow: 'hidden' }}>
         {user?.photo ? <img src={user.photo} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : initial}
       </div>

@@ -1,23 +1,23 @@
-/**
- * animations.js — Anime.js v4 animation utilities (named exports only)
- * All pages import from here. Anime.js v4 has NO default export.
- *
- * Exports:
- *   pageEntrance, fadeInUp, staggerFadeIn, btnPress,
- *   countUp, hoverLift, hoverReset,
- *   animateLoginEntrance, animateHeroEntrance,
- *   animateBtnPress, animateBtnRelease, animateBtnLoading, animateFormShake
- */
+
+
+
+
+
+
+
+
+
+
 import { animate, stagger } from 'animejs'
 
-/* ═══════════════════════════════════════════════════════
-   SHARED / GENERIC
-═══════════════════════════════════════════════════════ */
 
-/**
- * Fade + slide-up entrance for a full page container.
- * @param {string} selector  e.g. '.page-wrap'
- */
+
+
+
+
+
+
+
 export function pageEntrance(selector = '.page-wrap') {
   animate(selector, {
     opacity:    [0, 1],
@@ -27,11 +27,11 @@ export function pageEntrance(selector = '.page-wrap') {
   })
 }
 
-/**
- * Fade-in + slide-up for individual elements.
- * @param {string|HTMLElement} target
- * @param {number} delay  optional delay in ms
- */
+
+
+
+
+
 export function fadeInUp(target, delay = 0) {
   animate(target, {
     opacity:    [0, 1],
@@ -42,11 +42,11 @@ export function fadeInUp(target, delay = 0) {
   })
 }
 
-/**
- * Staggered fade-in for a list of child elements.
- * @param {string} selector  e.g. '.card-item'
- * @param {object} options   stagger options
- */
+
+
+
+
+
 export function staggerFadeIn(selector, options = {}) {
   const { stagger: staggerMs = 70, start = 80 } = options
   animate(selector, {
@@ -58,26 +58,26 @@ export function staggerFadeIn(selector, options = {}) {
   })
 }
 
-/**
- * Button press scale-down micro-animation.
- * @param {HTMLElement|string} el
- */
+
+
+
+
 export function btnPress(el) {
   if (!el) return
   animate(el, { scale: [1, 0.95], duration: 100, ease: 'outQuad' })
 }
 
-/* ═══════════════════════════════════════════════════════
-   METRIC CARD
-═══════════════════════════════════════════════════════ */
 
-/**
- * Animate a numeric counter from 0 → value.
- * Writes directly to el.textContent.
- * @param {HTMLElement} el
- * @param {number}      endValue
- * @param {string}      suffix   e.g. ' kWh'
- */
+
+
+
+
+
+
+
+
+
+
 export function countUp(el, endValue, options = {}) {
   if (!el) return
   const { duration = 1200, decimals = 0 } = options
@@ -92,10 +92,10 @@ export function countUp(el, endValue, options = {}) {
   })
 }
 
-/**
- * Lift a card on hover (mouseenter).
- * @param {HTMLElement} el
- */
+
+
+
+
 export function hoverLift(el) {
   if (!el) return
   animate(el, {
@@ -106,10 +106,10 @@ export function hoverLift(el) {
   })
 }
 
-/**
- * Reset card after hover (mouseleave).
- * @param {HTMLElement} el
- */
+
+
+
+
 export function hoverReset(el) {
   if (!el) return
   animate(el, {
@@ -120,14 +120,14 @@ export function hoverReset(el) {
   })
 }
 
-/* ═══════════════════════════════════════════════════════
-   LOGIN PAGE SPECIFIC
-═══════════════════════════════════════════════════════ */
 
-/**
- * Animate the login form panel on mount.
- * @param {string} containerSelector  e.g. '.login-form-wrap'
- */
+
+
+
+
+
+
+
 export function animateLoginEntrance(containerSelector = '.login-form-wrap') {
   animate(containerSelector, {
     opacity:    [0, 1],
@@ -144,10 +144,10 @@ export function animateLoginEntrance(containerSelector = '.login-form-wrap') {
   })
 }
 
-/**
- * Animate the 3D hero panel on mount.
- * @param {string} panelSelector  e.g. '.login-hero-panel'
- */
+
+
+
+
 export function animateHeroEntrance(panelSelector = '.login-hero-panel') {
   animate(panelSelector, {
     opacity:    [0, 1],
@@ -158,29 +158,29 @@ export function animateHeroEntrance(panelSelector = '.login-hero-panel') {
   })
 }
 
-/**
- * Button press (mousedown).
- * @param {HTMLElement} el
- */
+
+
+
+
 export function animateBtnPress(el) {
   if (!el) return
   animate(el, { scale: [1, 0.96], duration: 110, ease: 'outQuad' })
 }
 
-/**
- * Button release (mouseup / mouseleave).
- * @param {HTMLElement} el
- */
+
+
+
+
 export function animateBtnRelease(el) {
   if (!el) return
   animate(el, { scale: [0.96, 1], duration: 250, ease: 'outBack' })
 }
 
-/**
- * Loading pulse while submitting.
- * Call .cancel() on the returned instance to stop.
- * @param {HTMLElement} el
- */
+
+
+
+
+
 export function animateBtnLoading(el) {
   if (!el) return null
   return animate(el, {
@@ -192,10 +192,10 @@ export function animateBtnLoading(el) {
   })
 }
 
-/**
- * Error shake on the form.
- * @param {string} selector  e.g. '.login-form'
- */
+
+
+
+
 export function animateFormShake(selector = '.login-form') {
   animate(selector, {
     translateX: [

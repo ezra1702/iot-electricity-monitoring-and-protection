@@ -3,46 +3,46 @@
 #include <PZEM004Tv30.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
-#include <esp_task_wdt.h> // ESP32 Task Watchdog Timer (TWDT)
+#include <esp_task_wdt.h> 
 #include <esp_idf_version.h>
 
-// WiFi & MQTT Configurations
+
 #define WIFI_SSID       "X"
 #define WIFI_PASSWORD   "x12345678"
 #define MQTT_SERVER     "broker.hivemq.com"
 #define MQTT_PORT       1883
 #define DASHBOARD_URL   "localhost:3000"
 
-// OLED Pins (SDA -> D21, SCK -> D22)
+
 #define SDA_PIN       21
 #define SCL_PIN       22
 
-// PZEM-004T Pins (RX -> D16, TX -> D17)
+
 #define RXD2          16
 #define TXD2          17
 
-// MQ-2 Gas Sensor Pin (Analog -> D33)
+
 #define MQ2_PIN       33
 
-// Relay Pin (D25)
+
 #define RELAY_PIN     25
 
-// Buzzer Pin (D19)
+
 #define BUZZER_PIN    19
 
-// Reset Button Pin (D18) - tekan untuk clear kondisi ALERT
+
 #define RESET_BTN_PIN 18
 
-// Threshold batas gas MQ-2
+
 #define MQ2_THRESHOLD 2000
 
-// Interval durasi tampilan info dan animasi senyum (ms)
-#define SMILE_INTERVAL  12000UL   // Tampil info selama 12 detik
-#define SMILE_DURATION  5000UL    // Tampil animasi senyum selama 5 detik
 
-#define GAS_SAFE_LEVEL 1500      // batas aman untuk re-arm sensor gas
+#define SMILE_INTERVAL  12000UL   
+#define SMILE_DURATION  5000UL    
 
-// Konstruktor OLED SH1106 menggunakan U8g2
+#define GAS_SAFE_LEVEL 1500      
+
+
 U8G2_SH1106_128X64_NONAME_F_HW_I2C u8g2(U8G2_R0, U8X8_PIN_NONE);
 
 HardwareSerial pzemSerial(2);
@@ -56,12 +56,12 @@ String telemetryTopic = "";
 unsigned long lastMqttRetry = 0;
 unsigned long lastPublish = 0;
 
-// ── FreeRTOS Mutex & Semaphore Handles ──────────────────────────
+
 SemaphoreHandle_t i2cMutex;
 SemaphoreHandle_t dataMutex;
 SemaphoreHandle_t alertSemaphore;
 
-// ── Finite State Machine (FSM) untuk Modeling ──────────────────
+
 enum SystemState {
   STATE_NORMAL,
   STATE_ALERT_GAS,
@@ -69,7 +69,7 @@ enum SystemState {
   STATE_DISARMED_HYSTERESIS
 };
 
-// ── State global (Dilindungi oleh dataMutex) ───────────────────
+
 SystemState currentState = STATE_NORMAL;
 
 int   mq2Value        = 0;
@@ -81,25 +81,25 @@ float pf              = 0.0;
 bool  pzemOk          = false;
 
 bool  lastBtnState    = HIGH;
-bool  gasArmed        = true;    // hysteresis: re-arm setelah gas turun ke aman
-float maxCurrentLimit = 5.0;     // batas arus dari dashboard
-bool  resetTriggered  = false;   // trigger reset dari tombol fisik/MQTT
+bool  gasArmed        = true;    
+float maxCurrentLimit = 5.0;     
+bool  resetTriggered  = false;   
 
-// State untuk mode testing / simulasi mandiri (Self-Test via MQTT)
+
 bool simGasAlert      = false;
 bool simOverloadAlert = false;
 
-// ── State local untuk animasi (Hanya diakses di TaskOLED) ──────
+
 unsigned long lastSmileShow  = 0;
 bool smileVisible            = false;
 bool smileEyeOpen            = true;
 unsigned long lastEyeBlink   = 0;
-bool alertHeaderInv          = true;   // untuk blink header alert
+bool alertHeaderInv          = true;   
 unsigned long lastAlertBlink = 0;
-uint8_t  sparkleFrame        = 0;      // animasi bintang
+uint8_t  sparkleFrame        = 0;      
 unsigned long lastSparkle    = 0;
 
-// ── Gas bar indicator (mode normal) ──────────────────────────
+
 void drawGasBar(int rawValue) {
   int barX = 38, barY = 24, barW = 60, barH = 5;
   u8g2.drawFrame(barX, barY, barW, barH);
@@ -107,19 +107,19 @@ void drawGasBar(int rawValue) {
   if (fill > 0) u8g2.drawBox(barX + 1, barY + 1, fill, barH - 2);
 }
 
-// ── Double-height digit (untuk alert mode) ────────────────────
+
 void drawBigDigit(int digit, int x, int y) {
   const uint8_t segs[10] = {
-    0b1110111, // 0
-    0b0010010, // 1
-    0b1101101, // 2
-    0b1111001, // 3
-    0b0011011, // 4
-    0b1011011, // 5
-    0b1011111, // 6
-    0b1110010, // 7
-    0b1111111, // 8
-    0b1111011, // 9
+    0b1110111, 
+    0b0010010, 
+    0b1101101, 
+    0b1111001, 
+    0b0011011, 
+    0b1011011, 
+    0b1011111, 
+    0b1110010, 
+    0b1111111, 
+    0b1111011, 
   };
   if (digit < 0 || digit > 9) return;
   uint8_t s = segs[digit];
@@ -145,7 +145,7 @@ void drawBigNumber(int value, int x, int y) {
   }
 }
 
-// ── Animasi wajah senyum ─────────────────────────────────────
+
 void drawSmileFace(bool eyeOpen, uint8_t sparkle) {
   int cx = 64, cy = 30, r = 26;
 
@@ -221,7 +221,7 @@ void drawSmileFace(bool eyeOpen, uint8_t sparkle) {
   u8g2.setFont(u8g2_font_6x10_tf);
 }
 
-// ── I2C Scanner ───────────────────────────────────────────────
+
 void scanI2C() {
   Serial.println("========== I2C SCANNER ==========");
   byte found = 0;
@@ -239,13 +239,13 @@ void scanI2C() {
   Serial.println("=================================");
 }
 
-// ── MQTT Callback: terima config, command reset, dan self-test ──
+
 void mqttCallback(char* topic, byte* payload_bytes, unsigned int length) {
   String topicStr = String(topic);
   String msg = "";
   for (unsigned int i = 0; i < length; i++) msg += (char)payload_bytes[i];
 
-  // 1. Config Update (Batas Arus)
+  
   String configTopic = "voltedge/config/" + macAddress;
   if (topicStr == configTopic) {
     float val = msg.toFloat();
@@ -257,20 +257,20 @@ void mqttCallback(char* topic, byte* payload_bytes, unsigned int length) {
     }
   }
 
-  // 2. Perintah Remote Reset
+  
   String resetTopic = "voltedge/reset/" + macAddress;
   if (topicStr == resetTopic) {
     if (msg == "reset") {
       xSemaphoreTake(dataMutex, portMAX_DELAY);
       resetTriggered = true; 
-      simGasAlert      = false; // matikan simulasi saat direset
+      simGasAlert      = false; 
       simOverloadAlert = false;
       xSemaphoreGive(dataMutex);
       Serial.println("[MQTT] Perintah reset diterima.");
     }
   }
 
-  // 3. Mode Pengujian & Simulasi Mandiri (Self-Test Mode)
+  
   String testTopic = "voltedge/test/" + macAddress;
   if (topicStr == testTopic) {
     xSemaphoreTake(dataMutex, portMAX_DELAY);
@@ -291,7 +291,7 @@ void mqttCallback(char* topic, byte* payload_bytes, unsigned int length) {
   }
 }
 
-// ── MQTT Reconnection ─────────────────────────────────────────
+
 void reconnectMQTT() {
   if (!client.connected()) {
     Serial.print("Menghubungkan ke MQTT Broker...");
@@ -318,22 +318,22 @@ void reconnectMQTT() {
   }
 }
 
-// ══════════════════════════════════════════════════════════════
-//  TASK 1: BACA SENSOR & PROTEKSI FSM (CORE 0 - HIGH PRIORITY)
-// ══════════════════════════════════════════════════════════════
+
+
+
 void TaskSensorRead(void *pvParameters) {
   (void) pvParameters;
 
-  // TWDT: Registrasikan task ini agar dipantau
+  
   esp_task_wdt_add(NULL);
 
   TickType_t xLastWakeTime = xTaskGetTickCount();
 
   for (;;) {
-    // Beri makan TWDT agar tidak reset ESP32
+    
     esp_task_wdt_reset();
 
-    // 1. Baca Tombol Reset D18 (active LOW)
+    
     bool btnState = digitalRead(RESET_BTN_PIN);
     
     xSemaphoreTake(dataMutex, portMAX_DELAY);
@@ -341,11 +341,11 @@ void TaskSensorRead(void *pvParameters) {
     xSemaphoreGive(dataMutex);
 
     if (btnState == LOW && currentBtnState == HIGH) {
-      vTaskDelay(pdMS_TO_TICKS(50)); // debounce
+      vTaskDelay(pdMS_TO_TICKS(50)); 
       if (digitalRead(RESET_BTN_PIN) == LOW) {
         xSemaphoreTake(dataMutex, portMAX_DELAY);
         resetTriggered   = true;
-        simGasAlert      = false; // reset simulasi
+        simGasAlert      = false; 
         simOverloadAlert = false;
         xSemaphoreGive(dataMutex);
         Serial.println("[RESET] Tombol fisik ditekan.");
@@ -356,7 +356,7 @@ void TaskSensorRead(void *pvParameters) {
     lastBtnState = btnState;
     xSemaphoreGive(dataMutex);
 
-    // 2. Baca Sensor PZEM-004T secara fisik
+    
     float v = pzem.voltage();
     float c = pzem.current();
     float p = pzem.power();
@@ -364,16 +364,16 @@ void TaskSensorRead(void *pvParameters) {
     float pf_val = pzem.pf();
     bool ok = !isnan(v) && !isnan(c) && !isnan(p);
 
-    // 3. Baca Sensor MQ-2 secara fisik
+    
     int mq2 = analogRead(MQ2_PIN);
 
-    // 4. Integrasikan data simulasi jika Test Mode aktif (Testing & Validasi)
+    
     xSemaphoreTake(dataMutex, portMAX_DELAY);
     if (simGasAlert) {
-      mq2 = 3500; // di atas threshold 2000
+      mq2 = 3500; 
     }
     if (simOverloadAlert) {
-      c = maxCurrentLimit + 2.0; // di atas maxCurrentLimit
+      c = maxCurrentLimit + 2.0; 
       ok = true;
     }
 
@@ -385,12 +385,12 @@ void TaskSensorRead(void *pvParameters) {
     pzemOk   = ok;
     mq2Value = mq2;
 
-    // 5. FINITE STATE MACHINE (FSM) TRANSITIONS
+    
     SystemState nextState = currentState;
     bool gasDanger      = (mq2 > MQ2_THRESHOLD);
     bool overloadDanger = ok && (c > maxCurrentLimit);
 
-    // Hysteresis logic
+    
     if (!gasArmed && mq2 < GAS_SAFE_LEVEL) {
       gasArmed = true;
       Serial.println("[FSM] Hysteresis: Sensor gas re-armed (aman).");
@@ -411,7 +411,7 @@ void TaskSensorRead(void *pvParameters) {
         if (resetTriggered) {
           if (gasDanger) {
             nextState = STATE_DISARMED_HYSTERESIS;
-            gasArmed = false; // Bypass deteksi gas sementara
+            gasArmed = false; 
             Serial.println("[FSM] STATE Transition: ALERT_GAS -> DISARMED_HYSTERESIS (Gas masih tinggi)");
           } else {
             nextState = STATE_NORMAL;
@@ -432,10 +432,10 @@ void TaskSensorRead(void *pvParameters) {
       case STATE_DISARMED_HYSTERESIS:
         if (mq2 < GAS_SAFE_LEVEL) {
           nextState = STATE_NORMAL;
-          gasArmed = true; // aktifkan lagi
+          gasArmed = true; 
           Serial.println("[FSM] STATE Transition: DISARMED_HYSTERESIS -> NORMAL (Gas aman, re-armed)");
         }
-        // Proteksi sekunder: Jika terjadi overload saat gas disarm, tetap trip overload!
+        
         if (overloadDanger) {
           nextState = STATE_ALERT_OVERLOAD;
           Serial.println("[FSM] STATE Transition: DISARMED_HYSTERESIS -> ALERT_OVERLOAD");
@@ -443,32 +443,32 @@ void TaskSensorRead(void *pvParameters) {
         break;
     }
 
-    // Cek jika ada transisi status baru dari aman ke bahaya
+    
     bool isOldAlert = (currentState == STATE_ALERT_GAS || currentState == STATE_ALERT_OVERLOAD);
     bool isNewAlert = (nextState == STATE_ALERT_GAS || nextState == STATE_ALERT_OVERLOAD);
     
     if (isNewAlert && !isOldAlert) {
-      xSemaphoreGive(alertSemaphore); // Bangunkan task MQTT untuk publish instan
+      xSemaphoreGive(alertSemaphore); 
     }
 
     currentState = nextState;
 
-    // 6. Jalankan Aksi Aktuator (Relay & Buzzer) sesuai FSM State
+    
     if (currentState == STATE_ALERT_GAS || currentState == STATE_ALERT_OVERLOAD) {
-      digitalWrite(RELAY_PIN, LOW); // PUTUS DAYA (LOW)
+      digitalWrite(RELAY_PIN, LOW); 
       
-      // Buzzer berbunyi berkedip (2730Hz / 2300Hz)
+      
       xSemaphoreGive(dataMutex); 
       unsigned long buzzerCycle = millis() % 300;
       tone(BUZZER_PIN, buzzerCycle < 150 ? 2730 : 2300);
       xSemaphoreTake(dataMutex, portMAX_DELAY);
     } else {
-      digitalWrite(RELAY_PIN, HIGH); // NYALAKAN DAYA (HIGH)
+      digitalWrite(RELAY_PIN, HIGH); 
       noTone(BUZZER_PIN);
       digitalWrite(BUZZER_PIN, HIGH);
     }
 
-    // Debug print (Setiap 1 detik)
+    
     static unsigned long lastSerialPrint = 0;
     if (millis() - lastSerialPrint >= 1000UL) {
       lastSerialPrint = millis();
@@ -490,13 +490,13 @@ void TaskSensorRead(void *pvParameters) {
 
     xSemaphoreGive(dataMutex);
 
-    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100)); // Cek setiap 100ms
+    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100)); 
   }
 }
 
-// ══════════════════════════════════════════════════════════════
-//  TASK 2: RENDER OLED GRAPHICS (CORE 1 - MEDIUM PRIORITY)
-// ══════════════════════════════════════════════════════════════
+
+
+
 void TaskOLED(void *pvParameters) {
   (void) pvParameters;
 
@@ -509,7 +509,7 @@ void TaskOLED(void *pvParameters) {
 
     unsigned long now = millis();
 
-    // Dapatkan data visual terproteksi
+    
     xSemaphoreTake(dataMutex, portMAX_DELAY);
     float v = voltage;
     float c = current;
@@ -526,7 +526,7 @@ void TaskOLED(void *pvParameters) {
     bool isGasAlert = (state == STATE_ALERT_GAS);
     bool isOverloadAlert = (state == STATE_ALERT_OVERLOAD);
 
-    // Animasi senyum
+    
     bool showSmile = false;
     if (!isAlert) {
       if (!smileVisible && (now - lastSmileShow >= SMILE_INTERVAL)) {
@@ -542,7 +542,7 @@ void TaskOLED(void *pvParameters) {
       showSmile = smileVisible;
     }
 
-    // Update state animasi
+    
     if (isAlert && (now - lastAlertBlink >= 400UL)) {
       alertHeaderInv = !alertHeaderInv;
       lastAlertBlink = now;
@@ -556,7 +556,7 @@ void TaskOLED(void *pvParameters) {
       lastEyeBlink = now;
     }
 
-    // Menggambar OLED (Mutex I2C)
+    
     xSemaphoreTake(i2cMutex, portMAX_DELAY);
     u8g2.clearBuffer();
     u8g2.setFont(u8g2_font_6x10_tf);
@@ -678,13 +678,13 @@ void TaskOLED(void *pvParameters) {
     u8g2.sendBuffer();
     xSemaphoreGive(i2cMutex);
 
-    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(150)); // Draw screen every 150ms
+    vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(150)); 
   }
 }
 
-// ══════════════════════════════════════════════════════════════
-//  TASK 3: KONEKSI & MQTT TELEMETRY (CORE 1 - LOW PRIORITY)
-// ══════════════════════════════════════════════════════════════
+
+
+
 void TaskMQTT(void *pvParameters) {
   (void) pvParameters;
 
@@ -705,8 +705,8 @@ void TaskMQTT(void *pvParameters) {
       }
     }
 
-    // Tunggu trigger alert darurat selama 2 detik.
-    // Jika tidak ada trigger (timeout), langsung kirim telemetri berkala (periodik).
+    
+    
     bool triggered = (xSemaphoreTake(alertSemaphore, pdMS_TO_TICKS(2000)) == pdTRUE);
 
     if (client.connected()) {
@@ -745,37 +745,37 @@ void TaskMQTT(void *pvParameters) {
       }
     }
 
-    vTaskDelay(pdMS_TO_TICKS(50)); // Jeda kecil untuk stabilitas task loop
+    vTaskDelay(pdMS_TO_TICKS(50)); 
   }
 }
 
-// ──────────────────────────────────────────────────────────────
+
 void setup() {
   Serial.begin(115200);
   delay(1000);
   Serial.println("\n=== PZEM & MQ2 MONITOR (FreeRTOS) ===");
 
-  // 1. Inisialisasi Pin Relay
+  
   pinMode(RELAY_PIN, OUTPUT);
   digitalWrite(RELAY_PIN, HIGH);
   Serial.println("[OK] Relay initialized (Default: OFF / Power ON)");
 
-  // 2. Inisialisasi Pin Buzzer
+  
   pinMode(BUZZER_PIN, OUTPUT);
   digitalWrite(BUZZER_PIN, HIGH);
   Serial.println("[OK] Buzzer initialized (Default: HIGH = SILENT)");
 
-  // 3. Inisialisasi Pin Tombol Reset
+  
   pinMode(RESET_BTN_PIN, INPUT_PULLUP);
   Serial.println("[OK] Reset button initialized on D18 (INPUT_PULLUP)");
 
-  // 4. Inisialisasi Mutex & Semaphore
+  
   i2cMutex = xSemaphoreCreateMutex();
   dataMutex = xSemaphoreCreateMutex();
   alertSemaphore = xSemaphoreCreateBinary();
 
 
-  // 6. Scan I2C & OLED Splash
+  
   Wire.begin(SDA_PIN, SCL_PIN);
   scanI2C();
   u8g2.begin();
@@ -796,12 +796,12 @@ void setup() {
   u8g2.sendBuffer();
   delay(1500);
 
-  // 7. PZEM & MQ-2 Attenuation
+  
   pzemSerial.begin(9600, SERIAL_8N1, RXD2, TXD2);
   pinMode(MQ2_PIN, INPUT);
   analogSetAttenuation(ADC_11db);
 
-  // 8. WiFi Connection
+  
   u8g2.clearBuffer();
   u8g2.setFont(u8g2_font_6x10_tf);
   u8g2.setDrawColor(1);
@@ -850,14 +850,14 @@ void setup() {
     delay(1500);
   }
 
-  // 9. MQTT Setup
+  
   client.setServer(MQTT_SERVER, MQTT_PORT);
   client.setCallback(mqttCallback);
   macAddress = WiFi.macAddress();
   macAddress.replace(":", "");
   telemetryTopic = "voltedge/telemetry/" + macAddress;
 
-  // 5. Inisialisasi Task Watchdog Timer (TWDT) - Timeout 15 Detik (Dipindahkan ke akhir setup agar tidak bootloop saat WiFi connecting)
+  
 #if defined(ESP_IDF_VERSION_MAJOR) && ESP_IDF_VERSION_MAJOR >= 5
   esp_task_wdt_config_t wdt_config = {
     .timeout_ms = 15000,
@@ -868,10 +868,10 @@ void setup() {
 #else
   esp_task_wdt_init(15, true);
 #endif
-  esp_task_wdt_add(NULL); // Daftarkan task utama (setup/loop)
+  esp_task_wdt_add(NULL); 
 
-  // 10. Membuat Task-Task FreeRTOS
-  // TaskSensorRead: Core 0, Priority 3 (Tinggi)
+  
+  
   xTaskCreatePinnedToCore(
     TaskSensorRead,
     "TaskSensorRead",
@@ -882,7 +882,7 @@ void setup() {
     0
   );
 
-  // TaskOLED: Core 1, Priority 2 (Sedang)
+  
   xTaskCreatePinnedToCore(
     TaskOLED,
     "TaskOLED",
@@ -893,7 +893,7 @@ void setup() {
     1
   );
 
-  // TaskMQTT: Core 1, Priority 1 (Rendah)
+  
   xTaskCreatePinnedToCore(
     TaskMQTT,
     "TaskMQTT",
@@ -908,6 +908,6 @@ void setup() {
 }
 
 void loop() {
-  esp_task_wdt_reset(); // Feed the main task watchdog
+  esp_task_wdt_reset(); 
   vTaskDelay(pdMS_TO_TICKS(1000));
 }

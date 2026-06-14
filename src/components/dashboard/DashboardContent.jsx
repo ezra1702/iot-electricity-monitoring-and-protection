@@ -14,15 +14,15 @@ import {
   Tooltip, ResponsiveContainer, Legend,
 } from "recharts";
 
-/**
- * Main dashboard content — metrics, gauges, chart, and history table.
- */
+
+
+
 export function DashboardContent({ sensor, chartData, history, alerts, onDismiss, settings }) {
   const sc = STATUS[sensor.status] || STATUS.normal;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      {/* Status bar */}
+      {}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ fontSize: 12, color: "var(--t3)" }}>Status Sistem:</span>
@@ -31,20 +31,20 @@ export function DashboardContent({ sensor, chartData, history, alerts, onDismiss
         <span className="mono" style={{ fontSize: 11, color: "var(--t4)" }}>{fmtDateTime(sensor.timestamp)}</span>
       </div>
 
-      {/* Alerts */}
+      {}
       {alerts.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {alerts.map(t => <AlertCard key={t} type={t} onDismiss={onDismiss} />)}
         </div>
       )}
 
-      {/* Cost cards */}
+      {}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(250px,1fr))", gap: 16 }}>
         <CostCard isDaily value={sensor.daily_cost} trend={2.4} />
         <CostCard isDaily={false} value={sensor.monthly_cost} trend={-1.8} />
       </div>
 
-      {/* Metric cards */}
+      {}
       <div style={{ display: "flex", flexWrap: "wrap", gap: 13 }}>
         <MetricCard style={{ flex: "1 1 165px" }} icon={<Zap size={16} />}             label="Voltage"      value={sensor.voltage}      unit="V"   accent="#f97316" barPct={(sensor.voltage / 250) * 100} />
         <MetricCard style={{ flex: "1 1 165px" }} icon={<Activity size={16} />}        label="Current"      value={sensor.current}      unit="A"   accent="#3b82f6" barPct={(sensor.current / (settings.maxCurrent || 10)) * 100} />
@@ -53,7 +53,7 @@ export function DashboardContent({ sensor, chartData, history, alerts, onDismiss
         <MetricCard style={{ flex: "1 1 165px" }} icon={<Shield size={16} />}          label="Power Factor" value={sensor.power_factor} unit="PF"  accent="#a855f7" barPct={sensor.power_factor * 100} />
       </div>
 
-      {/* Gauges + Chart */}
+      {}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 16 }}>
         <Card style={{ padding: 24 }}>
           <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "var(--t3)", marginBottom: 20 }}>Analog Meters</p>

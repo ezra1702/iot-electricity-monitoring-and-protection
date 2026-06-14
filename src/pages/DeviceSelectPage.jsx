@@ -4,7 +4,7 @@ import { pageEntrance, staggerFadeIn } from '../utils/animations'
 
 export default function DeviceSelectPage({ setPage }) {
   const [showAdd, setShowAdd] = useState(false)
-  const [scanStep, setScanStep] = useState(0) // 0: intro, 1: radar, 2: identity, 3: threshold, 4: sync
+  const [scanStep, setScanStep] = useState(0) 
   const [deviceName, setDeviceName] = useState('')
   const [deviceMac, setDeviceMac] = useState('')
   const [deviceLoc, setDeviceLoc] = useState('')
@@ -17,7 +17,7 @@ export default function DeviceSelectPage({ setPage }) {
   const [scannedDevices, setScannedDevices] = useState([])
   const [isScanning, setIsScanning] = useState(false)
 
-  // States for Delete Device
+  
   const [deletingDevice, setDeletingDevice] = useState(null)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
@@ -62,7 +62,7 @@ export default function DeviceSelectPage({ setPage }) {
 
   const handleDeviceClick = (id) => {
     localStorage.setItem('voltEdge_activeDeviceId', id)
-    localStorage.setItem('voltEdge_deviceId', id)  // dipakai SettingsPage untuk update threshold
+    localStorage.setItem('voltEdge_deviceId', id)  
     setPage('dashboard')
   }
 
@@ -73,8 +73,8 @@ export default function DeviceSelectPage({ setPage }) {
     setIsScanning(true)
     setScannedDevices([])
 
-    // ESP32 butuh ~15 detik warmup MQ-2 sebelum bisa kirim MQTT
-    // Jadi scan kita beri waktu 30 detik (15 attempts × 2000ms)
+    
+    
     const MAX_ATTEMPTS = 15
     const INTERVAL_MS  = 2000
     setScanCountdown(MAX_ATTEMPTS * INTERVAL_MS / 1000)
@@ -162,7 +162,7 @@ export default function DeviceSelectPage({ setPage }) {
             <Bluetooth size={22} color="#38BDF8" /> {scanStep > 1 ? 'Registrasi Sistem IoT' : 'Tambah ESP32 Baru'}
           </h2>
 
-          {/* Stepper Wizard Indicator */}
+          {}
           {scanStep > 0 && scanStep < 4 && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: -4, marginBottom: 10 }}>
               {[
@@ -188,7 +188,7 @@ export default function DeviceSelectPage({ setPage }) {
             </div>
           )}
 
-          {/* STEP 0: Introduction */}
+          {}
           {scanStep === 0 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <p style={{ fontSize: 14, color: '#94A3B8', lineHeight: 1.6 }}>
@@ -200,11 +200,11 @@ export default function DeviceSelectPage({ setPage }) {
             </div>
           )}
 
-          {/* STEP 1: Scanning & Discovery Results - AIRDROP STYLE */}
+          {}
           {scanStep === 1 && (
             <div style={{ padding: '3rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24, minHeight: 320, position: 'relative' }}>
               
-              {/* Radar Center */}
+              {}
               <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -50%)', width: 100, height: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10 }}>
                  {isScanning && (
                    <>
@@ -219,9 +219,9 @@ export default function DeviceSelectPage({ setPage }) {
                  </div>
               </div>
 
-              {/* Floating Devices (AirDrop Style) */}
+              {}
               {scannedDevices.map((d, i) => {
-                 // Calculate position around the circle (radius ~ 100px)
+                 
                  const angle = (i * (360 / scannedDevices.length)) * (Math.PI / 180);
                  const x = Math.cos(angle) * 110;
                  const y = Math.sin(angle) * 110;
@@ -251,11 +251,11 @@ export default function DeviceSelectPage({ setPage }) {
                  )
               })}
 
-              {/* Status Text at bottom */}
+              {}
               <div style={{ position: 'absolute', bottom: 0, width: '100%', textAlign: 'center' }}>
                 {isScanning ? (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-                    {/* Warmup notice */}
+                    {}
                     <div style={{
                       background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.2)',
                       borderRadius: 10, padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 8
@@ -265,11 +265,11 @@ export default function DeviceSelectPage({ setPage }) {
                         ESP32 perlu <strong>~15 detik warmup</strong> MQ-2 sebelum terdeteksi
                       </p>
                     </div>
-                    {/* Countdown */}
+                    {}
                     <p style={{ fontSize: 14, fontWeight: 700, color: '#38BDF8', animation: 'pulse 1.5s infinite' }}>
                       Mencari Perangkat... {scanCountdown > 0 && <span style={{ fontFamily: 'monospace', color: '#22D3EE' }}>({scanCountdown}d)</span>}
                     </p>
-                    {/* Progress bar */}
+                    {}
                     <div style={{ width: '80%', height: 4, background: 'rgba(56,189,248,0.1)', borderRadius: 99, overflow: 'hidden' }}>
                       <div style={{
                         height: '100%', borderRadius: 99,
@@ -301,7 +301,7 @@ export default function DeviceSelectPage({ setPage }) {
             </div>
           )}
 
-          {/* STEP 2: Device Identity Inputs */}
+          {}
           {scanStep === 2 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div style={{ padding: '16px', borderRadius: 12, background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -349,7 +349,7 @@ export default function DeviceSelectPage({ setPage }) {
             </div>
           )}
 
-          {/* STEP 3: Threshold Limits Setup */}
+          {}
           {scanStep === 3 && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               <div style={{ padding: '14px', borderRadius: 12, background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.2)', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
@@ -402,7 +402,7 @@ export default function DeviceSelectPage({ setPage }) {
             </div>
           )}
 
-          {/* STEP 4: Finishing connecting loader */}
+          {}
           {scanStep === 4 && (
             <div style={{ padding: '3rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
               <Loader2 size={40} color="#38BDF8" style={{ animation: 'spinSlow 1s linear infinite' }} />
@@ -421,7 +421,7 @@ export default function DeviceSelectPage({ setPage }) {
   return (
     <div style={{ minHeight: '100vh', position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', overflowX: 'hidden', overflowY: 'auto', backgroundColor: '#020617' }}>
       
-      {/* Top Bar Modern */}
+      {}
       <div style={{ width: '100%', padding: '24px 5%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 50 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div className="gradient-electric" style={{ width: 32, height: 32, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#020617' }}>
@@ -444,13 +444,13 @@ export default function DeviceSelectPage({ setPage }) {
         </button>
       </div>
 
-      {/* PREMIUM CYBERPUNK MESH BACKGROUND (Opacity Diturunkan) */}
+      {}
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 0 }}>
-        {/* Glow Orbs */}
+        {}
         <div style={{ position: 'absolute', top: '-10%', left: '-10%', width: '60vw', height: '60vw', background: 'radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%)', filter: 'blur(80px)', animation: 'floatOrb 12s ease-in-out infinite alternate' }} />
         <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: '70vw', height: '70vw', background: 'radial-gradient(circle, rgba(167,139,250,0.05) 0%, transparent 70%)', filter: 'blur(90px)', animation: 'floatOrb 15s ease-in-out infinite alternate-reverse' }} />
         
-        {/* Tech Grid Lines Halus */}
+        {}
         <div style={{ position: 'absolute', inset: 0, backgroundImage: 'linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)', backgroundSize: '40px 40px', maskImage: 'radial-gradient(ellipse at center, black 40%, transparent 80%)', WebkitMaskImage: 'radial-gradient(ellipse at center, black 40%, transparent 80%)' }} />
         
         <style>
@@ -472,10 +472,10 @@ export default function DeviceSelectPage({ setPage }) {
         </style>
       </div>
 
-      {/* Main Container Lebih Proporsional */}
+      {}
       <div style={{ width: '100%', maxWidth: 650, position: 'relative', zIndex: 10, padding: '2rem 1.5rem 4rem 1.5rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
         
-        {/* Header Block Redesign */}
+        {}
         <div className="a-title" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', marginBottom: 48 }}>
           <div className="gradient-electric" style={{ width: 64, height: 64, borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#020617', boxShadow: '0 0 30px rgba(56,189,248,0.4)', transform: 'rotate(-4deg)', marginBottom: 20 }}>
             <Cpu size={32} />
@@ -484,7 +484,7 @@ export default function DeviceSelectPage({ setPage }) {
           <p style={{ fontSize: 14, color: 'rgba(148, 163, 184, 0.8)', marginTop: 10, maxWidth: '85%', lineHeight: 1.6 }}>Identifikasi dan pilih node panel distribusi kelistrikan untuk memulai agregasi data sensor secara real-time.</p>
         </div>
 
-        {/* Saved Devices Section Label */}
+        {}
         <div className="a-title" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
           <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, rgba(56,189,248,0.5), transparent)' }} />
           <p style={{ fontSize: 12, fontWeight: 800, color: '#38BDF8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
@@ -513,12 +513,12 @@ export default function DeviceSelectPage({ setPage }) {
               onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(56,189,248,0.4)'; e.currentTarget.style.background = 'linear-gradient(135deg, rgba(30,41,59,0.9) 0%, rgba(15,23,42,0.7) 100%)' }}
               onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.background = 'linear-gradient(135deg, rgba(15,23,42,0.7) 0%, rgba(30,41,59,0.5) 100%)' }}
             >
-              {/* Core Icon Indicator */}
+              {}
               <div style={{ width: 60, height: 60, borderRadius: 16, background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Wifi size={28} color={device.status === 'online' ? '#38BDF8' : '#475569'} style={{ filter: device.status === 'online' ? 'drop-shadow(0 0 12px rgba(56,189,248,0.7))' : 'none', transition: 'all 0.3s' }} />
               </div>
               
-              {/* Content Panel */}
+              {}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <h3 style={{ fontSize: 18, fontWeight: 800, color: '#f1f5f9', marginBottom: 8, display: 'flex', alignItems: 'center', columnGap: 10, flexWrap: 'wrap', textShadow: '0 0 10px rgba(255,255,255,0.1)' }}>
                   {device.name}
@@ -549,7 +549,7 @@ export default function DeviceSelectPage({ setPage }) {
           )))}
         </div>
 
-        {/* Primary CTA Solid Cyan */}
+        {}
         <button 
           onClick={() => setShowAdd(true)}
           className="gradient-electric a-title" 
@@ -564,10 +564,10 @@ export default function DeviceSelectPage({ setPage }) {
 
       </div>
       
-      {/* Append dynamic connection modal component */}
+      {}
       {renderAddModal()}
 
-      {/* MODAL KONFIRMASI HAPUS PERANGKAT */}
+      {}
       {deletingDevice && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div 

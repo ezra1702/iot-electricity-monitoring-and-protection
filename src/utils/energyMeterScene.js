@@ -1,21 +1,21 @@
-/**
- * energyMeterScene.js — Three.js Smart Energy Meter 3D Visualizer
- * Procedural geometry (no GLTF needed).
- * Features: drag orbit, scroll zoom, auto-rotate, float animation,
- *           glowing LED display, animated pulse ring, emissive accents.
- */
+
+
+
+
+
+
 import * as THREE from 'three'
 
-/* ─── Colour palette ─────────────────────────────────────────────────── */
+
 const C = {
-  body:        0x1a2744,   // dark navy housing
+  body:        0x1a2744,   
   bodyEdge:    0x0f1a30,
-  faceplate:   0x0d1f3c,  // slightly lighter front face
-  display:     0x001a0d,  // dark LCD background
-  displayGlow: 0x00ff88,  // green LCD text color
-  accent:      0x38bdf8,  // electric blue
+  faceplate:   0x0d1f3c,  
+  display:     0x001a0d,  
+  displayGlow: 0x00ff88,  
+  accent:      0x38bdf8,  
   accentCyan:  0x22d3ee,
-  metal:       0xaabbcc,  // metallic trim
+  metal:       0xaabbcc,  
   metalDark:   0x667788,
   screw:       0x8899aa,
   led_green:   0x22c55e,
@@ -27,7 +27,7 @@ const C = {
   terminal:    0xd4a843,
 }
 
-/* ─── Helpers ─────────────────────────────────────────────────────────── */
+
 const box = (w, h, d, color, rough = 0.5, metal = 0.1) => {
   const g = new THREE.BoxGeometry(w, h, d)
   const m = new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal })
@@ -41,31 +41,31 @@ const cyl = (rt, rb, h, segs, color, rough = 0.5, metal = 0.3) => {
 }
 
 const roundedBox = (w, h, d, color, rough = 0.4, metal = 0.15) => {
-  // Approximate rounded box using scaled sphere + box blend
+  
   const g = new THREE.BoxGeometry(w, h, d, 2, 2, 2)
   const m = new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: metal })
   return new THREE.Mesh(g, m)
 }
 
-/* ─── Canvas texture helpers ──────────────────────────────────────────── */
+
 function makeDisplayTexture() {
   const W = 512, H = 256
   const canvas = document.createElement('canvas')
   canvas.width = W; canvas.height = H
   const ctx = canvas.getContext('2d')
 
-  // LCD background
+  
   ctx.fillStyle = '#001a0d'
   ctx.fillRect(0, 0, W, H)
 
-  // Grid lines (LCD effect)
+  
   ctx.strokeStyle = 'rgba(0,255,100,0.05)'
   ctx.lineWidth = 1
   for (let i = 0; i < H; i += 4) {
     ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(W, i); ctx.stroke()
   }
 
-  // Main kWh reading
+  
   ctx.fillStyle = '#00ff88'
   ctx.font = 'bold 72px monospace'
   ctx.textAlign = 'center'
@@ -73,18 +73,18 @@ function makeDisplayTexture() {
   ctx.shadowBlur = 18
   ctx.fillText('1.847', W / 2, 100)
 
-  // Unit
+  
   ctx.font = 'bold 28px monospace'
   ctx.shadowBlur = 10
   ctx.fillText('kWh', W / 2, 138)
 
-  // Bottom line
+  
   ctx.font = '600 20px monospace'
   ctx.fillStyle = 'rgba(0,255,136,0.55)'
   ctx.shadowBlur = 6
   ctx.fillText('220V  4.8A  NORMAL', W / 2, 210)
 
-  // Corner dots
+  
   const corners = [[24, 24], [W - 24, 24], [24, H - 24], [W - 24, H - 24]]
   corners.forEach(([x, y]) => {
     ctx.beginPath()
@@ -112,40 +112,40 @@ function makeLabelTexture(text, color = '#38bdf8') {
   return new THREE.CanvasTexture(canvas)
 }
 
-/* ─── Build Smart Energy Meter ───────────────────────────────────────── */
+
 function buildEnergyMeter() {
   const root = new THREE.Group()
 
-  /* ── Main housing body ── */
+  
   const bodyW = 3.2, bodyH = 4.8, bodyD = 1.6
   const body = roundedBox(bodyW, bodyH, bodyD, C.body, 0.55, 0.15)
   body.castShadow = true
   body.receiveShadow = true
   root.add(body)
 
-  // Side rails (metallic trim)
+  
   ;[-bodyW / 2, bodyW / 2].forEach(x => {
     const rail = box(0.10, bodyH + 0.04, bodyD + 0.04, C.metal, 0.3, 0.85)
     rail.position.set(x, 0, 0)
     root.add(rail)
   })
 
-  // Top cap
+  
   const topCap = box(bodyW + 0.1, 0.18, bodyD + 0.1, C.metal, 0.3, 0.85)
   topCap.position.set(0, bodyH / 2 + 0.09, 0)
   root.add(topCap)
 
-  // Bottom cap
+  
   const botCap = box(bodyW + 0.1, 0.18, bodyD + 0.1, C.metal, 0.3, 0.85)
   botCap.position.set(0, -bodyH / 2 - 0.09, 0)
   root.add(botCap)
 
-  /* ── Front face ── */
+  
   const face = box(bodyW - 0.12, bodyH - 0.14, 0.06, C.faceplate, 0.65, 0.05)
   face.position.set(0, 0, bodyD / 2 + 0.03)
   root.add(face)
 
-  /* ── LCD Display ── */
+  
   const dispW = 2.2, dispH = 1.1
   const dispTex = makeDisplayTexture()
   const dispMat = new THREE.MeshStandardMaterial({
@@ -159,31 +159,31 @@ function buildEnergyMeter() {
   dispMesh.position.set(0, 0.9, bodyD / 2 + 0.07)
   root.add(dispMesh)
 
-  // Display frame/bezel
+  
   const bezel = box(dispW + 0.18, dispH + 0.18, 0.07, 0x0a0f1e, 0.7, 0.2)
   bezel.position.set(0, 0.9, bodyD / 2 + 0.04)
   root.add(bezel)
 
-  // LCD point light
+  
   const lcdLight = new THREE.PointLight(0x00ff88, 1.5, 2.5)
   lcdLight.position.set(0, 0.9, bodyD / 2 + 0.5)
   root.add(lcdLight)
 
-  /* ── Brand label ── */
+  
   const brandTex = makeLabelTexture('VOLTEDGE', '#38bdf8')
   const brandMat = new THREE.MeshBasicMaterial({ map: brandTex, transparent: true })
   const brandMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 0.4), brandMat)
   brandMesh.position.set(0, 2.05, bodyD / 2 + 0.07)
   root.add(brandMesh)
 
-  /* ── Model label ── */
+  
   const modelTex = makeLabelTexture('SMART METER v2', 'rgba(56,189,248,0.6)')
   const modelMat = new THREE.MeshBasicMaterial({ map: modelTex, transparent: true })
   const modelMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 0.3), modelMat)
   modelMesh.position.set(0, -2.1, bodyD / 2 + 0.07)
   root.add(modelMesh)
 
-  /* ── LED indicators row ── */
+  
   const ledColors = [C.led_green, C.led_blue, C.led_amber]
   const ledLights = []
   ledColors.forEach((color, i) => {
@@ -206,7 +206,7 @@ function buildEnergyMeter() {
     ledLights.push({ light: pl, base: color })
   })
 
-  /* ── Screw corners ── */
+  
   const screwPositions = [
     [-1.35, 2.1], [1.35, 2.1], [-1.35, -2.1], [1.35, -2.1]
   ]
@@ -214,7 +214,7 @@ function buildEnergyMeter() {
     const screw = cyl(0.07, 0.07, 0.1, 8, C.screw, 0.4, 0.8)
     screw.position.set(x, y, bodyD / 2 + 0.07)
     root.add(screw)
-    // Cross slot
+    
     const slot1 = box(0.12, 0.016, 0.06, 0x556677, 0.5, 0.5)
     slot1.position.set(x, y, bodyD / 2 + 0.13)
     root.add(slot1)
@@ -223,7 +223,7 @@ function buildEnergyMeter() {
     root.add(slot2)
   })
 
-  /* ── Terminal block (bottom) ── */
+  
   const termBlock = box(2.8, 0.55, 0.9, 0x1e3050, 0.6, 0.05)
   termBlock.position.set(0, -2.6, 0.4)
   root.add(termBlock)
@@ -234,14 +234,14 @@ function buildEnergyMeter() {
     term.rotation.x = Math.PI / 2
     term.position.set(-1.0 + i * 0.5, -2.6, bodyD / 2 + 0.2)
     root.add(term)
-    // Wire stub
+    
     const wire = cyl(0.03, 0.03, 0.5, 6, col, 0.8, 0.0)
     wire.position.set(-1.0 + i * 0.5, -2.6, bodyD / 2 + 0.65)
     wire.rotation.x = Math.PI / 2
     root.add(wire)
   })
 
-  /* ── DIN rail clip (back) ── */
+  
   const dinRail = box(3.0, 0.32, 0.28, C.metalDark, 0.3, 0.85)
   dinRail.position.set(0, 0, -bodyD / 2 - 0.14)
   root.add(dinRail)
@@ -252,7 +252,7 @@ function buildEnergyMeter() {
   dinClip2.position.set(1.2, 0, -bodyD / 2 - 0.25)
   root.add(dinClip2)
 
-  /* ── Glowing pulse ring (decorative) ── */
+  
   const ringGeo = new THREE.TorusGeometry(0.35, 0.025, 8, 48)
   const ringMat = new THREE.MeshStandardMaterial({
     color: C.accent,
@@ -264,7 +264,7 @@ function buildEnergyMeter() {
   ring.position.set(0.82, -1.2, bodyD / 2 + 0.07)
   root.add(ring)
 
-  /* ── Small button ── */
+  
   const btn = cyl(0.12, 0.12, 0.1, 16, C.accent, 0.3, 0.2)
   btn.rotation.x = Math.PI / 2
   btn.position.set(-0.9, -1.6, bodyD / 2 + 0.1)
@@ -280,12 +280,12 @@ function buildEnergyMeter() {
   return { group: root, ledLights, ring, ringMat, lcdLight }
 }
 
-/* ─── Main scene factory ──────────────────────────────────────────────── */
+
 export function createEnergyMeterScene(canvas) {
   const W = canvas.clientWidth  || canvas.offsetWidth  || 600
   const H = canvas.clientHeight || canvas.offsetHeight || 600
 
-  /* Renderer */
+  
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
   renderer.setSize(W, H, false)
@@ -294,15 +294,15 @@ export function createEnergyMeterScene(canvas) {
   renderer.toneMapping = THREE.ACESFilmicToneMapping
   renderer.toneMappingExposure = 1.3
 
-  /* Scene */
+  
   const scene = new THREE.Scene()
 
-  /* Camera */
+  
   const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 100)
   camera.position.set(0, 1, 10)
   camera.lookAt(0, 0, 0)
 
-  /* Lights */
+  
   scene.add(new THREE.AmbientLight(0x8899bb, 0.7))
 
   const keyLight = new THREE.DirectionalLight(0xaaccff, 2.8)
@@ -326,7 +326,7 @@ export function createEnergyMeterScene(canvas) {
   fillLight.position.set(0, -4, 4)
   scene.add(fillLight)
 
-  /* Shadow plane */
+  
   const shadowPlane = new THREE.Mesh(
     new THREE.PlaneGeometry(20, 20),
     new THREE.ShadowMaterial({ opacity: 0.2 })
@@ -336,13 +336,13 @@ export function createEnergyMeterScene(canvas) {
   shadowPlane.receiveShadow = true
   scene.add(shadowPlane)
 
-  /* Build meter */
+  
   const { group, ledLights, ring, ringMat, lcdLight } = buildEnergyMeter()
   group.castShadow = true
   group.position.y = 0
   scene.add(group)
 
-  /* ─── Orbit state ──────────────────────────────────── */
+  
   let isDragging  = false
   let autoRotate  = true
   let lastMouse   = { x: 0, y: 0 }
@@ -353,7 +353,7 @@ export function createEnergyMeterScene(canvas) {
   let animTime    = 0
   const clock = new THREE.Clock()
 
-  /* ─── Camera update ──────────────────────────────────── */
+  
   function updateCamera() {
     const { theta, phi, radius } = spherical
     camera.position.x = radius * Math.sin(phi) * Math.sin(theta)
@@ -363,7 +363,7 @@ export function createEnergyMeterScene(canvas) {
   }
   updateCamera()
 
-  /* ─── Pointer events ─────────────────────────────────── */
+  
   const onPointerDown = (e) => {
     isDragging   = true
     autoRotate   = false
@@ -394,7 +394,7 @@ export function createEnergyMeterScene(canvas) {
   canvas.addEventListener('pointerleave', onPointerUp)
   canvas.addEventListener('wheel',        onWheel, { passive: false })
 
-  /* ─── Resize ─────────────────────────────────────────── */
+  
   const onResize = () => {
     const w = canvas.clientWidth
     const h = canvas.clientHeight
@@ -406,7 +406,7 @@ export function createEnergyMeterScene(canvas) {
   const resizeObserver = new ResizeObserver(onResize)
   resizeObserver.observe(canvas)
 
-  /* ─── Animation loop ─────────────────────────────────── */
+  
   let rafId
   const animate = () => {
     rafId = requestAnimationFrame(animate)
@@ -420,26 +420,26 @@ export function createEnergyMeterScene(canvas) {
     spherical.phi   += (targetPhi   - spherical.phi)   * 0.07
     updateCamera()
 
-    // Float
+    
     group.position.y = Math.sin(floatTime * 0.75) * 0.2
 
-    // LED pulse
+    
     ledLights.forEach(({ light }, i) => {
       light.intensity = 0.7 + 0.7 * Math.abs(Math.sin(animTime * (1.2 + i * 0.5)))
     })
 
-    // Pulse ring
+    
     const ringPulse = 1.5 + 1.5 * Math.abs(Math.sin(animTime * 2.0))
     ringMat.emissiveIntensity = ringPulse
 
-    // LCD flicker subtle
+    
     lcdLight.intensity = 1.2 + 0.3 * Math.sin(animTime * 7.3)
 
     renderer.render(scene, camera)
   }
   animate()
 
-  /* ─── Cleanup ─────────────────────────────────────────── */
+  
   const dispose = () => {
     cancelAnimationFrame(rafId)
     resizeObserver.disconnect()

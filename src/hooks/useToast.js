@@ -1,9 +1,9 @@
 import { useState, useCallback } from "react";
 
-/**
- * Custom hook for managing toast notifications.
- * @returns {{ toasts: Array, addToast: Function, removeToast: Function }}
- */
+
+
+
+
 export function useToast() {
   const [toasts, setToasts] = useState([]);
 

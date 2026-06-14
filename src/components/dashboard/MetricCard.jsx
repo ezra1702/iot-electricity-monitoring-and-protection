@@ -1,8 +1,8 @@
 import { Card } from "../ui/Card";
 
-/**
- * Dashboard metric card with icon, value, unit, and progress bar.
- */
+
+
+
 export function MetricCard({ icon, label, value, unit, accent, barPct, style }) {
   return (
     <Card style={{ padding: "24px 22px", ...style }}>

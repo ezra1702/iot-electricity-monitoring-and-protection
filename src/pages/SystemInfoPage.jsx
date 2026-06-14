@@ -1,9 +1,9 @@
 import { Card } from "../components/ui/Card";
 
-/**
- * System info page — displays ESP32 hardware details,
- * sensor input table, and output system table.
- */
+
+
+
+
 export function SystemInfoPage({ device }) {
   const inputs = [
     [1, "Analog",   "Voltage AC",   "ZMPT101B", "Mengukur tegangan RMS jaringan PLN"],
@@ -60,7 +60,7 @@ export function SystemInfoPage({ device }) {
         <p style={{ fontSize: 13, color: "var(--t3)" }}>Detail hardware dan topologi perangkat ESP32</p>
       </div>
 
-      {/* Device info card */}
+      {}
       <Card style={{ padding: 24 }}>
         <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "var(--t3)", marginBottom: 16 }}>Info Perangkat</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(155px,1fr))", gap: 16 }}>

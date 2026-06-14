@@ -1,6 +1,6 @@
-/**
- * SVG half-circle gauge meter with animated needle and glow effect.
- */
+
+
+
 export function Gauge({ value, max, label, unit, accent = "#f97316" }) {
   const pct = Math.min(1, Math.max(0, value / max));
   const color = pct < 0.6 ? accent : pct < 0.85 ? "#f59e0b" : "#ef4444";

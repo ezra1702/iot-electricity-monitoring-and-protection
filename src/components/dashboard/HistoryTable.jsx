@@ -9,9 +9,9 @@ const statusBadge = (s) => ({
   smoke:    { bg: "rgba(245,158,11,.1)", color: "#fbbf24", border: "rgba(245,158,11,.28)" },
 }[s] || { bg: "var(--input)", color: "var(--t3)", border: "var(--bd)" });
 
-/**
- * Paginated history table with search and CSV export.
- */
+
+
+
 export function HistoryTable({ data }) {
   const [q, setQ]       = useState("");
   const [page, setPage] = useState(1);
@@ -42,7 +42,7 @@ export function HistoryTable({ data }) {
 
   return (
     <Card>
-      {/* Header */}
+      {}
       <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--bd)", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10 }}>
         <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "var(--t3)" }}>Riwayat Monitoring</span>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -65,7 +65,7 @@ export function HistoryTable({ data }) {
         </div>
       </div>
 
-      {/* Table */}
+      {}
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
@@ -97,7 +97,7 @@ export function HistoryTable({ data }) {
         </table>
       </div>
 
-      {/* Pagination */}
+      {}
       <div style={{ padding: "12px 20px", borderTop: "1px solid var(--bd)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
         <span style={{ fontSize: 11, color: "var(--t3)" }}>
           {filtered.length === 0 ? 0 : (page - 1) * pp + 1}–{Math.min(page * pp, filtered.length)} dari {filtered.length}

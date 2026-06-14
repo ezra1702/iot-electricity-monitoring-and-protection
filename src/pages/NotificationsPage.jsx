@@ -30,7 +30,7 @@ export default function NotificationsPage({ notifs, setNotifs }) {
 
   return (
     <div id="notif-page" ref={pageRef} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* Header */}
+      {}
       <div className="a-title" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', justifyContent: 'space-between', gap: 14 }}>
         <div>
           <h2 style={{ fontSize: 20, fontWeight: 800, color: '#f1f5f9' }}>Notifikasi Sistem</h2>
@@ -41,7 +41,7 @@ export default function NotificationsPage({ notifs, setNotifs }) {
         </button>
       </div>
 
-      {/* Filters */}
+      {}
       <div className="a-metric" style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
         {[
           { id: 'all',     label: 'Semua',   c: '#94A3B8' },
@@ -66,7 +66,7 @@ export default function NotificationsPage({ notifs, setNotifs }) {
         ))}
       </div>
 
-      {/* Multi-Column Grid Layout for Notifications to save vertical space */}
+      {}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 14 }}>
         {filtered.map(n => (
           <div 
@@ -75,15 +75,15 @@ export default function NotificationsPage({ notifs, setNotifs }) {
             className="a-list glass-card" 
             style={{ display: 'flex', gap: 14, padding: '1rem', position: 'relative', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s', opacity: n.read ? 0.7 : 1 }}
           >
-            {/* Unread dot */}
+            {}
             {!n.read && <div style={{ position: 'absolute', top: 12, right: 12, width: 6, height: 6, borderRadius: '50%', background: '#38BDF8', boxShadow: '0 0 6px rgba(56,189,248,0.6)' }} />}
             
-            {/* Icon */}
+            {}
             <div style={{ width: 34, height: 34, borderRadius: 10, background: BGS[n.type], display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {ICONS[n.type]}
             </div>
             
-            {/* Content */}
+            {}
             <div style={{ flex: 1 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                 <h4 style={{ fontSize: 13, fontWeight: 700, color: !n.read ? '#f1f5f9' : '#e2e8f0' }}>{n.title}</h4>

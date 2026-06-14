@@ -6,10 +6,10 @@ import { ProfileSettingsPage } from "../../pages/ProfileSettingsPage";
 import { SystemInfoPage } from "../../pages/SystemInfoPage";
 import { useSensorData } from "../../hooks/useSensorData";
 
-/**
- * Main dashboard shell — wires together sidebar, topbar, content area,
- * sensor data hook, and settings state.
- */
+
+
+
+
 export function DashboardShell({ device, darkMode, toggleDark, user, onUpdateUser, onBack, addToast }) {
   const [sbOpen, setSbOpen]       = useState(true);
   const [mobileOpen, setMobile]   = useState(false);
@@ -36,7 +36,7 @@ export function DashboardShell({ device, darkMode, toggleDark, user, onUpdateUse
         }
       `}</style>
 
-      {/* Mobile overlay */}
+      {}
       {mobileOpen && (
         <div onClick={() => setMobile(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", zIndex: 190, backdropFilter: "blur(3px)", animation: "fadeIn .2s ease" }} />
       )}
@@ -46,7 +46,7 @@ export function DashboardShell({ device, darkMode, toggleDark, user, onUpdateUse
         </div>
       )}
 
-      {/* Desktop sidebar */}
+      {}
       <div className="sb-desktop">
         <Sidebar sbOpen={sbOpen} menu={menu} setMenu={setMenu} sensor={sensor} device={device} onBack={onBack} />
       </div>

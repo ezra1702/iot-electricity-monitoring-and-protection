@@ -1,6 +1,6 @@
-/**
- * User avatar — shows uploaded photo or gradient initials fallback.
- */
+
+
+
 export function Avatar({ user, size = 32, radius = 10, fontSize = 13 }) {
   if (user?.photo) {
     return (

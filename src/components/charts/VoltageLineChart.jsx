@@ -24,7 +24,7 @@ const CHART_OPTIONS = (categories) => ({
 })
 
 export default function VoltageLineChart({ logs = [] }) {
-  // Ambil maksimal 15 data terakhir dan balikkan agar urutannya kronologis (kiri ke kanan)
+  
   const chartData = useMemo(() => {
     return [...logs].reverse().slice(-15)
   }, [logs])

@@ -7,9 +7,9 @@ import {
 import { Card }   from "../components/ui/Card";
 import { Avatar } from "../components/ui/Avatar";
 
-/* ═══════════════════════════════════════════════════════════════
-   CSS
-═══════════════════════════════════════════════════════════════ */
+
+
+
 const PAIRING_CSS = `
 @keyframes pm-fade-in    { from{;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
 @keyframes pm-scale-in   { from{;transform:scale(.94)} to{opacity:1;transform:scale(1)} }
@@ -176,9 +176,9 @@ const PAIRING_CSS = `
 }
 `;
 
-/* ═══════════════════════════════════════════════════════════════
-   CONSTANTS
-═══════════════════════════════════════════════════════════════ */
+
+
+
 const MOCK_NEARBY = [
   { mac:"A4:CF:12:8B:3E:01", ssid:"ESP32-Energy-3E01", rssi:-42, fw:"v2.1.4", ip:"192.168.1.101", uptime:"3d 14h" },
   { mac:"B8:D6:1A:4C:9F:12", ssid:"ESP32-Energy-9F12", rssi:-61, fw:"v2.0.9", ip:"192.168.1.104", uptime:"1d 2h"  },
@@ -197,9 +197,9 @@ function generateDeviceId() {
   return `ESP32-${hex()}${hex()}`.slice(0,10);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   SHARED ATOMS
-═══════════════════════════════════════════════════════════════ */
+
+
+
 function SignalBars({ rssi, size=14 }) {
   const { bars, color } = rssiToStrength(rssi);
   return (
@@ -277,9 +277,9 @@ function StepIndicator({ current, labels }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   WIFI SCAN — REDESIGNED
-═══════════════════════════════════════════════════════════════ */
+
+
+
 function RadarDisc({ scanning }) {
   return (
     <div className="radar-container">
@@ -578,13 +578,13 @@ function StepScanWifi({ onFound }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   WIZARD STEPS
-═══════════════════════════════════════════════════════════════ */
 
-/* Step 2 — Konfigurasi (SUDAH DIUPDATE) */
+
+
+
+
 function StepConfigure({ deviceInfo, onDone }) {
-  // State kosong di awal agar user WAJIB isi, nggak ada default value lagi
+  
   const [form, setForm] = useState({ name:"", location:"", maxCurrent:10, tariff:1444 });
   const sig = deviceInfo ? rssiToStrength(deviceInfo.rssi) : null;
 
@@ -611,7 +611,7 @@ function StepConfigure({ deviceInfo, onDone }) {
       )}
       
       <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
-        {/* NAMA PERANGKAT */}
+        {}
         <div>
           <label style={{ display:"block", fontSize:10, fontWeight:700, textTransform:"uppercase",
             letterSpacing:1, color:"var(--t3)", marginBottom:6 }}>Nama Perangkat</label>
@@ -623,7 +623,7 @@ function StepConfigure({ deviceInfo, onDone }) {
           </div>
         </div>
 
-        {/* LOKASI PEMASANGAN */}
+        {}
         <div>
           <label style={{ display:"block", fontSize:10, fontWeight:700, textTransform:"uppercase",
             letterSpacing:1, color:"var(--t3)", marginBottom:6 }}>Lokasi Pemasangan</label>
@@ -636,7 +636,7 @@ function StepConfigure({ deviceInfo, onDone }) {
           </div>
         </div>
 
-        {/* PARAMETER LANJUTAN (Bukan Dropdown Lagi) */}
+        {}
         <div style={{ background:"var(--input)", borderRadius:12, border:"1px solid var(--bd)", overflow:"hidden" }}>
           <div style={{ padding:"12px 14px", fontSize:12, fontWeight:600, color:"var(--t2)",
             display:"flex", alignItems:"center", gap:7 }}>
@@ -665,7 +665,7 @@ function StepConfigure({ deviceInfo, onDone }) {
           onClick={()=>onDone(form)}>
           <Lock size={14}/> Mulai Pairing
         </button>
-        {/* Pesan peringatan jika form kosong */}
+        {}
         {(!form.name||!form.location) && (
           <p style={{ fontSize:11, color:"var(--t4)", textAlign:"center", marginTop:-8 }}>Nama dan lokasi wajib diisi</p>
         )}
@@ -674,7 +674,7 @@ function StepConfigure({ deviceInfo, onDone }) {
   );
 }
 
-/* Step 3 — Connecting */
+
 function StepConnecting({ deviceInfo, config, onSuccess }) {
   const [phase, setPhase] = useState(0);
   const phases = ["Menghubungkan ke jaringan…","Autentikasi perangkat…","Mengirim konfigurasi…","Memverifikasi koneksi…","Terhubung!"];
@@ -732,7 +732,7 @@ function StepConnecting({ deviceInfo, config, onSuccess }) {
   );
 }
 
-/* Step 4 — Sukses */
+
 function StepSuccess({ newDevice, onClose }) {
   return (
     <div style={{ padding:"8px 24px 32px", textAlign:"center", animation:"pm-slide-r .3s ease" }}>
@@ -783,9 +783,9 @@ function StepSuccess({ newDevice, onClose }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   PAIRING MODAL
-═══════════════════════════════════════════════════════════════ */
+
+
+
 function PairingModal({ onClose, onDeviceAdded }) {
   const LABELS = ["Perangkat", "Konfigurasi", "Pairing", "Selesai"];
   const [step,       setStep]       = useState(0);
@@ -806,7 +806,7 @@ function PairingModal({ onClose, onDeviceAdded }) {
       mac:        deviceInfo?.mac,
       maxCurrent: config?.maxCurrent || 10,
       tariff:     config?.tariff     || 1444,
-      name:       config?.name       || "ESP32", // Menyimpan nama dari konfigurasi form
+      name:       config?.name       || "ESP32", 
     };
     setNewDevice(dev);
     goNext(3);
@@ -826,7 +826,7 @@ function PairingModal({ onClose, onDeviceAdded }) {
       <style>{PAIRING_CSS}</style>
       <div className="pm-overlay" onClick={e => { if(e.target === e.currentTarget && canClose) onClose(); }}>
         <div className="pm-modal">
-          {/* Header */}
+          {}
           <div style={{ padding:"20px 24px 0", flexShrink:0 }}>
             <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
               <div style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -858,7 +858,7 @@ function PairingModal({ onClose, onDeviceAdded }) {
             </div>
           </div>
 
-          {/* Content */}
+          {}
           <div className="pm-content">
             {step === 0 && <StepScanWifi onFound={info => { setDeviceInfo(info); goNext(1); }} />}
             {step === 1 && <StepConfigure deviceInfo={deviceInfo} onDone={cfg => { setConfig(cfg); goNext(2); }} />}
@@ -866,7 +866,7 @@ function PairingModal({ onClose, onDeviceAdded }) {
             {step === 3 && newDevice && <StepSuccess newDevice={newDevice} onClose={onClose} />}
           </div>
 
-          {/* Footer */}
+          {}
           {step < 2 && (
             <div style={{ padding:"12px 24px", borderTop:"1px solid var(--bd)",
               display:"flex", alignItems:"center", gap:7, flexShrink:0 }}>
@@ -882,9 +882,9 @@ function PairingModal({ onClose, onDeviceAdded }) {
   );
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   DEVICE LIST PAGE
-═══════════════════════════════════════════════════════════════ */
+
+
+
 export function DeviceListPage({ devices: initialDevices, onSelect, user }) {
   const [devices,     setDevices] = useState(initialDevices);
   const [showPairing, setShow]    = useState(false);

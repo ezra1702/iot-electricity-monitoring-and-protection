@@ -1,9 +1,9 @@
 import { TrendingUp, TrendingDown, Wallet, CalendarDays } from "lucide-react";
 import { Rp, clamp } from "../../utils/formatters";
 
-/**
- * Cost estimation card — daily (gradient orange) or monthly (card style).
- */
+
+
+
 export function CostCard({ isDaily, value, trend }) {
   return (
     <div style={{

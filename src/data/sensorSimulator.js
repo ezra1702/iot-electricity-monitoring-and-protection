@@ -1,14 +1,14 @@
-/**
- * Sensor data simulator — mimics MQTT data from ESP32.
- * Cycles through: normal → overload/smoke → normal with random timing.
- */
+
+
+
+
 
 const _ds = { s: "normal", n: 0, t: 22 };
 
-/**
- * Advance the internal state machine and return the current status.
- * @returns {"normal" | "overload" | "smoke"}
- */
+
+
+
+
 export const nextStatus = () => {
   _ds.n++;
   if (_ds.n >= _ds.t) {
@@ -21,12 +21,12 @@ export const nextStatus = () => {
   return _ds.s;
 };
 
-/**
- * Generate a realistic sensor data object.
- * @param {{ tariff?: number, maxCurrent?: number }} cfg - system settings
- * @param {"normal" | "overload" | "smoke"} [status] - force a status
- * @returns {object}
- */
+
+
+
+
+
+
 export const genSensor = (cfg = {}, status) => {
   const tariff  = cfg.tariff      || 1444;
   const maxA    = cfg.maxCurrent  || 10;

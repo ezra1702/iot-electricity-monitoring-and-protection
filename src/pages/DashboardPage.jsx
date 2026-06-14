@@ -64,7 +64,7 @@ export default function DashboardPage({ addNotification, metrics, logs, deviceIn
 
 
   const priceKwh = deviceInfo ? parseFloat(deviceInfo.price_per_kwh) : 1444.70
-  // monthlyKwh is calculated based on monthly baseline in App.jsx
+  
   const monthlyCost = monthlyKwh * priceKwh
 
   return (
@@ -97,7 +97,7 @@ export default function DashboardPage({ addNotification, metrics, logs, deviceIn
           </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 16 }}>
-        {/* BIAYA HARI INI */}
+        {}
         <div className="a-metric" style={{
           padding: '1.5rem',
           background: 'rgba(34,197,94,0.07)',
@@ -110,7 +110,7 @@ export default function DashboardPage({ addNotification, metrics, logs, deviceIn
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: '#22C55E', letterSpacing: '0.05em' }}>BIAYA HARI INI</span>
-            {/* Large Rp badge */}
+            {}
             <span style={{
               fontSize: 22,
               fontWeight: 900,
@@ -126,7 +126,7 @@ export default function DashboardPage({ addNotification, metrics, logs, deviceIn
             <span style={{ fontSize: 32, fontWeight: 800, color: '#f1f5f9' }}>{costToday.toLocaleString('id-ID', { maximumFractionDigits: 0 })}</span>
           </div>
           <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 8 }}>Kalkulasi dari {dailyKwh.toFixed(4)} kWh hari ini</p>
-          {/* Decorative faint Rp watermark */}
+          {}
           <span style={{
             position: 'absolute', right: -8, bottom: -10,
             fontSize: 90, fontWeight: 900, color: 'rgba(34,197,94,0.06)',
@@ -134,7 +134,7 @@ export default function DashboardPage({ addNotification, metrics, logs, deviceIn
           }}>Rp</span>
         </div>
 
-        {/* TOTAL BULAN INI */}
+        {}
         <div className="a-metric" style={{
           padding: '1.5rem',
           background: 'rgba(56,189,248,0.07)',
@@ -147,7 +147,7 @@ export default function DashboardPage({ addNotification, metrics, logs, deviceIn
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
             <span style={{ fontSize: 12, fontWeight: 700, color: '#38BDF8', letterSpacing: '0.05em' }}>TOTAL BULAN INI (BERJALAN)</span>
-            {/* Bigger calendar icon */}
+            {}
             <Calendar size={26} color="#38BDF8" style={{ opacity: 0.85, filter: 'drop-shadow(0 0 6px rgba(56,189,248,0.5))' }} />
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
@@ -155,7 +155,7 @@ export default function DashboardPage({ addNotification, metrics, logs, deviceIn
             <span style={{ fontSize: 32, fontWeight: 800, color: '#f1f5f9' }}>{monthlyCost.toLocaleString('id-ID', { maximumFractionDigits: 0 })}</span>
           </div>
           <p style={{ fontSize: 12, color: '#94A3B8', marginTop: 8 }}>Akumulasi dari {monthlyKwh.toFixed(4)} kWh bulan ini</p>
-          {/* Decorative calendar watermark */}
+          {}
           <div style={{ position: 'absolute', right: -4, bottom: -8, opacity: 0.06, pointerEvents: 'none' }}>
             <Calendar size={90} color="#38BDF8" />
           </div>

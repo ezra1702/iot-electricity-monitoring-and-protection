@@ -10,9 +10,9 @@ import {
 } from '../utils/animations'
 import { createESP32Scene } from '../utils/esp32Scene'
 
-/* ═══════════════════════════════════════════════════════════════════════════
-   REGISTER PAGE — split layout, mirror of LoginPage
-   ═══════════════════════════════════════════════════════════════════════════ */
+
+
+
 export default function RegisterPage({ setPage, onRegister }) {
   const [form, setForm]   = useState({ full_name: '', email: '', password: '', confirm: '' })
   const [show, setShow]   = useState({ pwd: false, cfm: false })
@@ -26,7 +26,7 @@ export default function RegisterPage({ setPage, onRegister }) {
   const btnRef    = useRef(null)
   const loadAnim  = useRef(null)
 
-  /* ── Three.js scene (right panel) ── */
+  
   useEffect(() => {
     if (!canvasRef.current) return
     const { dispose } = createESP32Scene(canvasRef.current)
@@ -34,13 +34,13 @@ export default function RegisterPage({ setPage, onRegister }) {
     return () => sceneRef.current?.dispose()
   }, [])
 
-  /* ── Entrance animations ── */
+  
   useEffect(() => {
     animateLoginEntrance('.reg-form-wrap')
     animateHeroEntrance('.reg-hero-panel')
   }, [])
 
-  /* ── Validation ── */
+  
   const validate = () => {
     const errs = {}
     if (!form.full_name.trim())   errs.full_name = 'Nama lengkap wajib diisi.'
@@ -53,7 +53,7 @@ export default function RegisterPage({ setPage, onRegister }) {
     return errs
   }
 
-  /* ── Submit ── */
+  
   const handleSubmit = async (e) => {
     e.preventDefault()
     const errs = validate()
@@ -85,7 +85,7 @@ export default function RegisterPage({ setPage, onRegister }) {
       setLoad(false)
       setDone(true)
 
-      // Arahkan ke form login setelah sukses (1.8s)
+      
       setTimeout(() => {
         setPage('login')
       }, 1800)
@@ -102,7 +102,7 @@ export default function RegisterPage({ setPage, onRegister }) {
   const onBtnDown = useCallback(() => animateBtnPress(btnRef.current), [])
   const onBtnUp   = useCallback(() => animateBtnRelease(btnRef.current), [])
 
-  /* ═══════════════════════════════════════════════════════════════════════ */
+  
   return (
     <>
       <style>{`
@@ -370,7 +370,7 @@ export default function RegisterPage({ setPage, onRegister }) {
       `}</style>
 
       <div className="rp-root">
-        {/* Toast error */}
+        {}
         {error && (
           <div className="rp-toast-error">
             <AlertTriangle size={18} />
@@ -380,10 +380,10 @@ export default function RegisterPage({ setPage, onRegister }) {
 
         <div className="rp-bg-glow" />
 
-        {/* ══ LEFT — Form ══ */}
+        {}
         <div className="reg-form-wrap">
 
-          {/* Brand */}
+          {}
           <div className="rp-brand anim-item">
             <div className="rp-brand-icon"><Zap size={20} /></div>
             <span className="rp-brand-name">VOLTEDGE</span>
@@ -398,7 +398,7 @@ export default function RegisterPage({ setPage, onRegister }) {
 
             <div className="rp-sep anim-item" />
 
-            {/* ── Success State ── */}
+            {}
             {done ? (
               <div className="rp-success anim-item">
                 <CheckCircle size={56} color="#22c55e" className="rp-success-icon" />
@@ -408,7 +408,7 @@ export default function RegisterPage({ setPage, onRegister }) {
             ) : (
               <form className="reg-form" onSubmit={handleSubmit} noValidate>
 
-                {/* Full Name */}
+                {}
                 <div className="anim-item">
                   <label className="rp-label" htmlFor="reg-fullname">Nama Lengkap</label>
                   <div className="rp-input-wrap">
@@ -426,7 +426,7 @@ export default function RegisterPage({ setPage, onRegister }) {
                   {fieldErr.full_name && <p className="rp-field-err">⚠ {fieldErr.full_name}</p>}
                 </div>
 
-                {/* Email */}
+                {}
                 <div className="anim-item">
                   <label className="rp-label" htmlFor="reg-email">Email</label>
                   <div className="rp-input-wrap">
@@ -444,7 +444,7 @@ export default function RegisterPage({ setPage, onRegister }) {
                   {fieldErr.email && <p className="rp-field-err">⚠ {fieldErr.email}</p>}
                 </div>
 
-                {/* Password */}
+                {}
                 <div className="anim-item">
                   <label className="rp-label" htmlFor="reg-password">Password</label>
                   <div className="rp-input-wrap">
@@ -471,7 +471,7 @@ export default function RegisterPage({ setPage, onRegister }) {
                   {fieldErr.password && <p className="rp-field-err">⚠ {fieldErr.password}</p>}
                 </div>
 
-                {/* Confirm Password */}
+                {}
                 <div className="anim-item">
                   <label className="rp-label" htmlFor="reg-confirm">Konfirmasi Password</label>
                   <div className="rp-input-wrap">
@@ -498,7 +498,7 @@ export default function RegisterPage({ setPage, onRegister }) {
                   {fieldErr.confirm && <p className="rp-field-err">⚠ {fieldErr.confirm}</p>}
                 </div>
 
-                {/* Submit */}
+                {}
                 <button
                   ref={btnRef}
                   id="reg-submit-btn"
@@ -515,7 +515,7 @@ export default function RegisterPage({ setPage, onRegister }) {
                   }
                 </button>
 
-                {/* Login link */}
+                {}
                 <div className="rp-login-row anim-item">
                   <span className="rp-login-label">Sudah punya akun?</span>
                   <button
@@ -533,7 +533,7 @@ export default function RegisterPage({ setPage, onRegister }) {
           </div>
         </div>
 
-        {/* ══ RIGHT — 3D ESP32 ══ */}
+        {}
         <div className="reg-hero-panel">
           <div className="rp-esp-glow" />
           <div className="rp-scanline" />

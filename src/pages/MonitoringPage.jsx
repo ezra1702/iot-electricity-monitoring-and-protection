@@ -14,9 +14,9 @@ function GaugeCard({ label, value, max, unit, color }) {
   return (
     <div className="glass-card-sm" style={{ padding: '1rem', textAlign: 'center', flex: '1 1 130px' }}>
       <svg width={112} height={90} viewBox="0 0 112 80" style={{ overflow: 'visible' }}>
-        {/* Track */}
+        {}
         <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth={7} strokeDasharray={`${arc} ${circum - arc}`} strokeDashoffset={-circum * 0.125} strokeLinecap="round" />
-        {/* Value arc */}
+        {}
         <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth={7} strokeDasharray={`${arc} ${circum - arc}`} strokeDashoffset={offset - circum * 0.125} strokeLinecap="round" style={{ filter: `drop-shadow(0 0 4px ${color}80)`, transition: 'stroke-dashoffset 0.8s ease' }} />
         <text x={cx} y={cy - 2} textAnchor="middle" fill="#f1f5f9" fontSize={14} fontWeight={700}>{parseFloat(value).toFixed(1)}</text>
         <text x={cx} y={cy + 13} textAnchor="middle" fill={color} fontSize={9} fontWeight={600}>{unit}</text>
@@ -59,7 +59,7 @@ export default function MonitoringPage({ metrics, history, deviceInfo }) {
 
   return (
     <div id="monitor-page" ref={pageRef} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* Header */}
+      {}
       <div className="a-title" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
         <div>
           <h2 style={{ fontSize: 20, fontWeight: 800, color: '#f1f5f9' }}>Real-Time Monitoring</h2>
@@ -75,7 +75,7 @@ export default function MonitoringPage({ metrics, history, deviceInfo }) {
         </div>
       </div>
 
-      {/* Gauge Row */}
+      {}
       <div className="a-chart glass-card" style={{ padding: '1.25rem' }}>
         <p style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 16 }}>Analog Gauge Meters</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
@@ -83,7 +83,7 @@ export default function MonitoringPage({ metrics, history, deviceInfo }) {
         </div>
       </div>
 
-      {/* Parameter Cards with sparklines */}
+      {}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
         {PARAMS.map(p => {
           const Icon = p.icon
@@ -103,11 +103,11 @@ export default function MonitoringPage({ metrics, history, deviceInfo }) {
                   </p>
                 </div>
               </div>
-              {/* Progress bar */}
+              {}
               <div style={{ height: 3, background: 'rgba(255,255,255,0.06)', borderRadius: 2, marginBottom: 10, overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${p.color}, ${p.color}aa)`, borderRadius: 2, transition: 'width 0.8s ease', boxShadow: `0 0 6px ${p.color}60` }} />
               </div>
-              {/* Sparkline */}
+              {}
               <ReactApexChart
                 type="line"
                 series={[{ name: p.label, data: sparkData }]}
@@ -119,7 +119,7 @@ export default function MonitoringPage({ metrics, history, deviceInfo }) {
         })}
       </div>
 
-      {/* Device list */}
+      {}
       {deviceInfo && (
         <div className="a-chart glass-card" style={{ padding: '1.25rem' }}>
           <p style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 14 }}>Status Perangkat IoT</p>

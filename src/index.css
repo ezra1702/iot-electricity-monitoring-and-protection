@@ -22,7 +22,7 @@
   --font-sans: 'Inter', system-ui, sans-serif;
 }
 
-/* ── Base ─────────────────────────────────────────── */
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 html { font-family: var(--font-sans); }
@@ -33,7 +33,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Scrollbar ────────────────────────────────────── */
+
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
@@ -42,7 +42,7 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover { background: rgba(56,189,248,0.45); }
 
-/* ── Reusable component classes ───────────────────── */
+
 .glass-card {
   background: rgba(30,41,59,0.45);
   backdrop-filter: blur(16px);
@@ -85,7 +85,7 @@ body {
   box-shadow: inset 0 0 20px rgba(56,189,248,0.08), 0 0 12px rgba(56,189,248,0.20);
 }
 
-/* ── Input ────────────────────────────────────────── */
+
 .input-field {
   width: 100%;
   background: rgba(30,41,59,0.6);
@@ -100,7 +100,7 @@ body {
 .input-field:focus { border-color: rgba(56,189,248,0.50); }
 .input-field::placeholder { color: #475569; }
 
-/* ── Animations ───────────────────────────────────── */
+
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -149,7 +149,7 @@ body {
 .animate-spin-slow { animation: spinSlow 8s linear infinite; }
 .animate-blink     { animation: blink 1.2s ease-in-out infinite; }
 
-/* ── ApexCharts dark overrides ────────────────────── */
+
 .apexcharts-canvas  { background: transparent !important; }
 .apexcharts-tooltip {
   background: #1E293B !important;

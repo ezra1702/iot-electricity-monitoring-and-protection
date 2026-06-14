@@ -1,9 +1,9 @@
 import { CheckCircle, AlertTriangle, X } from "lucide-react";
 import { TBGMAP } from "../../constants/theme";
 
-/**
- * Single toast notification item.
- */
+
+
+
 export function Toast({ t, onClose }) {
   return (
     <div

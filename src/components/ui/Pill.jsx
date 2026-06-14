@@ -1,6 +1,6 @@
-/**
- * Status pill / badge with optional dot indicator.
- */
+
+
+
 export function Pill({ label, dot, bg, color, border }) {
   return (
     <span

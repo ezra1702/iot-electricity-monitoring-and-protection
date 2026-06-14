@@ -56,7 +56,7 @@ export default function HistoryPage({ logs = [] }) {
 
   return (
     <div id="history-page" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      {/* Header */}
+      {}
       <div className="a-title" style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div>
           <h2 style={{ fontSize: 20, fontWeight: 800, color: '#f1f5f9' }}>History & Logs</h2>
@@ -67,14 +67,14 @@ export default function HistoryPage({ logs = [] }) {
         </button>
       </div>
 
-      {/* Filters */}
+      {}
       <div className="a-metric glass-card" style={{ padding: '1rem', display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-        {/* Search */}
+        {}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 9, padding: '8px 12px', flex: '1 1 200px', minWidth: 0 }}>
           <Search size={13} color="#475569" style={{ flexShrink: 0 }} />
           <input value={search} onChange={e => { setSearch(e.target.value); setPage(1) }} placeholder="Cari device, status, waktu…" style={{ background: 'transparent', border: 'none', outline: 'none', color: '#f1f5f9', fontSize: 12, width: '100%' }} />
         </div>
-        {/* Status Filter */}
+        {}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {['all','normal','overload','smoke'].map(f => (
             <button key={f} onClick={() => { setFilter(f); setPage(1) }} style={{ fontSize: 11, fontWeight: 600, padding: '7px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', background: filter === f ? 'rgba(56,189,248,0.2)' : 'rgba(255,255,255,0.04)', color: filter === f ? '#38BDF8' : '#475569', transition: 'all 0.18s', textTransform: 'capitalize' }}>
@@ -84,7 +84,7 @@ export default function HistoryPage({ logs = [] }) {
         </div>
       </div>
 
-      {/* Table */}
+      {}
       <div className="a-chart glass-card" style={{ overflow: 'hidden' }}>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -120,7 +120,7 @@ export default function HistoryPage({ logs = [] }) {
           </table>
         </div>
 
-        {/* Pagination */}
+        {}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
           <span style={{ fontSize: 11, color: '#475569' }}>Hal {page} dari {totalPages} · {filtered.length} record</span>
           <div style={{ display: 'flex', gap: 6 }}>

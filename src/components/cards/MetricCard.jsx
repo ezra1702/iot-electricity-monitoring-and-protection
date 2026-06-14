@@ -23,7 +23,7 @@ export default function MetricCard({ label, value, unit, icon: Icon, accent = '#
       onMouseEnter={() => hoverLift(cardRef.current)}
       onMouseLeave={() => hoverReset(cardRef.current)}
     >
-      {/* Top row */}
+      {}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div style={{ width: 36, height: 36, borderRadius: 10, background: `${accent}1A`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Icon size={17} color={accent} />
@@ -36,7 +36,7 @@ export default function MetricCard({ label, value, unit, icon: Icon, accent = '#
         )}
       </div>
 
-      {/* Value */}
+      {}
       <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, marginBottom: 4 }}>
         <span ref={valRef} style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', lineHeight: 1, fontFamily: 'monospace' }}>
           {(+value).toFixed(decimals)}
@@ -46,7 +46,7 @@ export default function MetricCard({ label, value, unit, icon: Icon, accent = '#
 
       <p style={{ fontSize: 10, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>{label}</p>
 
-      {/* Bottom accent bar */}
+      {}
       <div style={{ height: 2, borderRadius: 2, background: `linear-gradient(90deg, ${accent}, transparent)`, marginTop: 12, opacity: 0.4 }} />
     </div>
   )

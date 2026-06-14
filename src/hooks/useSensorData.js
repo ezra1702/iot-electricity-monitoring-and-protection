@@ -2,13 +2,13 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { genSensor, nextStatus } from "../data/sensorSimulator";
 import { fmtTime } from "../utils/formatters";
 
-/**
- * Custom hook that manages real-time sensor data, chart data,
- * history records, and alert state using a 2-second polling interval.
- *
- * @param {{ tariff: number, maxCurrent: number }} settings
- * @param {(message: string, type: string) => void} addToast
- */
+
+
+
+
+
+
+
 export function useSensorData(settings, addToast) {
   const [sensor, setSensor]   = useState(() => genSensor(settings, "normal"));
   const [chartData, setChart] = useState(() =>

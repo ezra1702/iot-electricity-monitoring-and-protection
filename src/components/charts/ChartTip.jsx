@@ -1,6 +1,6 @@
-/**
- * Custom tooltip for Recharts AreaChart.
- */
+
+
+
 export function ChartTip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (

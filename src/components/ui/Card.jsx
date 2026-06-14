@@ -1,6 +1,6 @@
-/**
- * Base card container with consistent border, shadow, and background.
- */
+
+
+
 export function Card({ children, style = {}, onClick, onMouseEnter, onMouseLeave }) {
   return (
     <div

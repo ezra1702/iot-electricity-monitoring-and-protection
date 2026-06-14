@@ -8,7 +8,7 @@ export default function Sidebar({ page, setPage, collapsed, setCollapsed, notifC
   ]
   const initial = user?.name ? user.name.charAt(0).toUpperCase() : '?'
 
-  // If Mobile, force a strictly sized bottom layout that escapes flex rules!
+  
   const sidebarStyle = isMobile 
     ? {
         position: 'fixed', bottom: 0, left: 0, right: 0,
@@ -25,7 +25,7 @@ export default function Sidebar({ page, setPage, collapsed, setCollapsed, notifC
   return (
     <aside style={sidebarStyle}>
       
-      {/* DESKTOP LOGO */}
+      {}
       {!isMobile && (
         <div 
           onClick={() => collapsed && setCollapsed(false)}
@@ -49,7 +49,7 @@ export default function Sidebar({ page, setPage, collapsed, setCollapsed, notifC
         </div>
       )}
 
-      {/* MAGIC NAVIGATION (FLEX ROW ON MOBILE, COLUMN ON DESKTOP) */}
+      {}
       <nav style={{ flex: 1, display: 'flex', flexDirection: isMobile ? 'row' : 'column', justifyContent: isMobile ? 'space-around' : 'flex-start', padding: isMobile ? 0 : '1rem 0.5rem', gap: isMobile ? 0 : 6 }}>
         {MENU.map(({ id, icon: Icon, label, badge }) => {
           const active = page === id
@@ -64,7 +64,7 @@ export default function Sidebar({ page, setPage, collapsed, setCollapsed, notifC
                 transition: 'all 0.2s', overflow: 'hidden'
               }}
             >
-              {/* Active Indicator Line matches orientation */}
+              {}
               {active && isMobile && <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 24, height: 4, background: '#38BDF8', borderRadius: '0 0 4px 4px', boxShadow: '0 0 10px rgba(56,189,248,0.6)' }} />}
               {active && !isMobile && <div style={{ position: 'absolute', left: -8, top: '50%', transform: 'translateY(-50%)', width: 4, height: 26, background: '#38BDF8', borderRadius: '0 4px 4px 0', boxShadow: '0 0 10px rgba(56,189,248,0.6)' }} />}
 
@@ -87,7 +87,7 @@ export default function Sidebar({ page, setPage, collapsed, setCollapsed, notifC
         })}
       </nav>
 
-      {/* DESKTOP USER PROFILE */}
+      {}
       {!isMobile && (
         <div style={{ padding: '0.75rem 0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: 4 }}>
           {!collapsed && (

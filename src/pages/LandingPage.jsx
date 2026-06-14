@@ -34,14 +34,14 @@ export default function LandingPage({ setPage }) {
   return (
     <div id="landing-page" style={{ minHeight: '100vh', background: '#020617', overflowY: 'auto', position: 'relative' }}>
 
-      {/* Ambient glow bg */}
+      {}
       <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden', zIndex: 0 }}>
         <div style={{ position: 'absolute', top: '-20%', left: '-10%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(56,189,248,0.07) 0%, transparent 70%)' }} />
         <div style={{ position: 'absolute', bottom: '-20%', right: '-10%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(34,211,238,0.06) 0%, transparent 70%)' }} />
         <div style={{ position: 'absolute', top: '45%', left: '40%', width: 300, height: 300, borderRadius: '50%', background: 'radial-gradient(circle, rgba(96,165,250,0.05) 0%, transparent 70%)' }} />
       </div>
 
-      {/* Navbar */}
+      {}
       <nav className="a-title" style={{ position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 2.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div className="gradient-electric animate-pulse-glow" style={{ width: 38, height: 38, borderRadius: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -58,7 +58,7 @@ export default function LandingPage({ setPage }) {
         </div>
       </nav>
 
-      {/* Hero */}
+      {}
       <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '6rem 1.5rem 4rem', maxWidth: 900, margin: '0 auto' }}>
         <div className="a-title" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '6px 16px', borderRadius: 999, background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)', color: '#38BDF8', fontSize: 12, fontWeight: 600, marginBottom: 28 }}>
           <Zap size={11} />
@@ -83,7 +83,7 @@ export default function LandingPage({ setPage }) {
           </button>
         </div>
 
-        {/* Stats */}
+        {}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, maxWidth: 600, margin: '0 auto 80px' }}>
           {STATS.map(s => (
             <div key={s.label} className="a-metric glass-card" style={{ padding: '1rem', textAlign: 'center' }}>
@@ -93,7 +93,7 @@ export default function LandingPage({ setPage }) {
           ))}
         </div>
 
-        {/* Features */}
+        {}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 14, textAlign: 'left' }}>
           {FEATURES.map(f => {
             const Icon = f.icon
@@ -109,7 +109,7 @@ export default function LandingPage({ setPage }) {
           })}
         </div>
 
-        {/* CTA Bottom */}
+        {}
         <div className="a-chart glass-card" style={{ padding: '2.5rem', marginTop: 48, textAlign: 'center' }}>
           <h3 style={{ fontSize: 22, fontWeight: 800, color: '#f1f5f9', marginBottom: 10 }}>Siap Mulai Monitoring?</h3>
           <p style={{ fontSize: 13, color: '#64748B', lineHeight: 1.7, marginBottom: 24 }}>Sambungkan ESP32 Anda ke MQTT broker dan mulai pantau instalasi listrik secara real-time.</p>
@@ -119,7 +119,7 @@ export default function LandingPage({ setPage }) {
           </div>
         </div>
 
-        {/* Footer */}
+        {}
         <p style={{ marginTop: 40, fontSize: 11, color: '#334155' }}>VoltEdge IoT Monitor · ESP32 + PZEM-004T + MQ-2 · Data Simulator Mode</p>
       </div>
     </div>

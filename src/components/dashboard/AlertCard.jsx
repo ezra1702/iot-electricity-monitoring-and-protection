@@ -2,10 +2,10 @@ import { useState } from "react";
 import { AlertTriangle, Flame, X } from "lucide-react";
 import { Card } from "../ui/Card";
 
-/**
- * Alert card for overload / smoke detection events.
- * Shows a confirmation modal before dismissing.
- */
+
+
+
+
 export function AlertCard({ type, onDismiss }) {
   const [confirm, setConfirm] = useState(false);
   const isOvl = type === "overload";

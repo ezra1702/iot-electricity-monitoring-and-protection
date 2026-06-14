@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 
-/**
- * Reusable input field with optional icon, suffix, and password toggle.
- */
+
+
+
 export function Field({ label, icon, type = "text", value, onChange, placeholder, suffix, hint, readOnly }) {
   const [show, setShow] = useState(false);
   const isPass = type === "password";

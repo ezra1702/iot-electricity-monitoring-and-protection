@@ -26,7 +26,7 @@ export default function App() {
     ]
   })
 
-  // ── First Run: tampilkan wizard setup jika belum pernah konfigurasi ──
+  
   const [firstRun, setFirstRun] = useState(() => !localStorage.getItem('voltEdge_setupDone'))
   const [setupForm, setSetupForm] = useState({
     max_current: localStorage.getItem('voltEdge_maxCurrent') || '',
@@ -35,7 +35,7 @@ export default function App() {
   const [setupError, setSetupError] = useState('')
   const [skipWaiting, setSkipWaiting] = useState(() => !!localStorage.getItem('voltEdge_setupDone'))
 
-  // ── Global Settings & Device Info (Loaded from localStorage) ──
+  
   const [deviceInfo, setDeviceInfo] = useState({
     name: 'VoltEdge Panel Utama',
     mac_address: localStorage.getItem('voltEdge_macAddress') || '20E7C8674D3C',
@@ -45,7 +45,7 @@ export default function App() {
     price_per_kwh: parseFloat(localStorage.getItem('voltEdge_priceKwh') || '1444.70')
   })
 
-  // ── Telemetry Metrics ──
+  
   const [metrics, setMetrics] = useState({
     voltage: 0,
     current: 0,
@@ -56,10 +56,10 @@ export default function App() {
     relayActive: false
   })
 
-  // ── Telemetry Logs (History) ──
+  
   const [logs, setLogs] = useState([])
 
-  // ── Global user state (Simulated) ──
+  
   const [user, setUser] = useState({
     id:    'default-user-uuid',
     name:  'VoltEdge User',
@@ -73,13 +73,13 @@ export default function App() {
   })
 
   const mqttClientRef   = useRef(null)
-  const gasAlertArmed   = useRef(true)   // hysteresis: re-arm setelah gas turun ke aman
+  const gasAlertArmed   = useRef(true)   
   const [mqttConnected, setMqttConnected] = useState(false)
 
-  // ── Direct Browser MQTT Connection ──
+  
   useEffect(() => {
     const mac = deviceInfo.mac_address.trim().toUpperCase()
-    // HiveMQ public broker — port 8884 (WSS) lebih jarang diblokir dari port 8000 (WS)
+    
     const brokerUrl = `wss://broker.hivemq.com:8884/mqtt`
 
     console.log(`[MQTT] Connecting to ${brokerUrl} | topic: voltedge/telemetry/${mac}`)
@@ -96,7 +96,7 @@ export default function App() {
       setDeviceInfo(prev => ({ ...prev, status: 'online' }))
       client.subscribe(`voltedge/telemetry/${mac}`)
 
-      // Auto-publish current limit to ESP32 on startup/reconnect to keep them in sync
+      
       const configTopic = `voltedge/config/${mac}`
       const configVal = String(parseFloat(localStorage.getItem('voltEdge_maxCurrent') || '5.0'))
       client.publish(configTopic, configVal, { retain: true })
@@ -121,7 +121,7 @@ export default function App() {
         setMetrics(newMetrics)
         setDeviceInfo(prev => ({ ...prev, status: 'online' }))
 
-        // Create log entry for charts and table
+        
         const newLogEntry = {
           id: Date.now() + Math.random().toString(),
           time: new Date().toLocaleTimeString('id-ID'),
@@ -141,13 +141,13 @@ export default function App() {
           return next
         })
 
-        // Check for alerts
+        
         const isOverload   = newMetrics.alertType === 'overload' || (newMetrics.current > deviceInfo.max_current_limit)
         const isGasDanger  = newMetrics.alertType === 'gas' || (newMetrics.gas >= 2000)
-        // Fallback: relay diputus ESP32 tapi web tidak tahu kenapa (gas disarm / edge case)
+        
         const isRelayTrip  = !newMetrics.relayActive && newMetrics.voltage < 1 && !isGasDanger && !isOverload
 
-        // Hysteresis: re-arm gas alert setelah gas turun ke level aman
+        
         if (!gasAlertArmed.current && newMetrics.gas < 1500) {
           gasAlertArmed.current = true
           console.log('[GAS] Sensor gas re-armed (gas sudah turun ke aman)')
@@ -180,13 +180,13 @@ export default function App() {
             return prev
           })
         } else if (isRelayTrip) {
-          // Fallback alert: relay diputus, semua 0 — paksa re-arm gas dan tampilkan alert
+          
           gasAlertArmed.current = true
           setGlobalAlert(prev => {
             if (!prev) {
               addNotification('Daya Terputus!', 'Relay ESP32 diputus — semua nilai 0. Periksa sensor.', 'danger')
               return {
-                type: 'gas',  // pakai tipe gas agar sticky (harus klik OK)
+                type: 'gas',  
                 title: 'DAYA TERPUTUS!',
                 msg: `Relay ESP32 diputus dan semua nilai menjadi 0. Kemungkinan gas/asap terdeteksi. MQ-2: ${newMetrics.gas}. Periksa perangkat!`,
                 time: new Date().toLocaleTimeString('id-ID')
@@ -195,12 +195,12 @@ export default function App() {
             return prev
           })
         } else {
-          // Gas alert: sticky — tidak hilang sampai user klik OK
-          // Overload alert: auto-clear saat kondisi normal
+          
+          
           setGlobalAlert(prev => {
             if (!prev) return null
-            if (prev.type === 'gas') return prev  // gas tetap tampil
-            return null  // overload hilang otomatis
+            if (prev.type === 'gas') return prev  
+            return null  
           })
           setShowConfirm(false)
           setUserChecked(false)
@@ -226,7 +226,7 @@ export default function App() {
     }
   }, [deviceInfo.mac_address])
 
-  // ── Settings Update Callback ──
+  
   const handleUpdateSettings = (newSettings) => {
     localStorage.setItem('voltEdge_macAddress', newSettings.mac_address)
     localStorage.setItem('voltEdge_maxCurrent', newSettings.max_current_limit.toString())
@@ -239,7 +239,7 @@ export default function App() {
       price_per_kwh: newSettings.price_per_kwh
     }))
 
-    // Publish threshold configuration change to ESP32
+    
     if (mqttClientRef.current && mqttConnected) {
       const configTopic = `voltedge/config/${newSettings.mac_address.toUpperCase()}`
       const configVal = String(newSettings.max_current_limit)
@@ -248,7 +248,7 @@ export default function App() {
     }
   }
 
-  // ── Global Alert System ──
+  
   const [globalAlert, setGlobalAlert] = useState(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [userChecked, setUserChecked] = useState(false)
@@ -303,12 +303,12 @@ export default function App() {
 
   const unread = notifs.filter(n => !n.read).length
 
-  // Calculate costs based on last live energy value and baselines stored in localStorage
+  
   const latestEnergy = logs.length > 0 ? logs[0].energy : 0
 
   const getBaselineEnergy = (currentEnergy) => {
-    const todayStr = new Date().toLocaleDateString('id-ID'); // e.g. "9/6/2026"
-    const monthStr = new Date().getMonth() + '-' + new Date().getFullYear(); // e.g. "5-2026"
+    const todayStr = new Date().toLocaleDateString('id-ID'); 
+    const monthStr = new Date().getMonth() + '-' + new Date().getFullYear(); 
 
     let storedDay = localStorage.getItem('voltEdge_baselineDayDate');
     let storedDayKwh = localStorage.getItem('voltEdge_baselineDayKwh');
@@ -317,14 +317,14 @@ export default function App() {
 
     const currentEnergyNum = parseFloat(currentEnergy || 0);
 
-    // Day check & self-healing (if counter reset or baseline > current)
+    
     if (!storedDay || storedDay !== todayStr || !storedDayKwh || parseFloat(storedDayKwh) > currentEnergyNum) {
       localStorage.setItem('voltEdge_baselineDayDate', todayStr);
       localStorage.setItem('voltEdge_baselineDayKwh', currentEnergyNum.toString());
       storedDayKwh = currentEnergyNum.toString();
     }
 
-    // Month check & self-healing
+    
     if (!storedMonth || storedMonth !== monthStr || !storedMonthKwh || parseFloat(storedMonthKwh) > currentEnergyNum) {
       localStorage.setItem('voltEdge_baselineMonthDate', monthStr);
       localStorage.setItem('voltEdge_baselineMonthKwh', currentEnergyNum.toString());
@@ -344,7 +344,7 @@ export default function App() {
   const costToday = dailyKwh * deviceInfo.price_per_kwh;
 
 
-  // ── Handler: simpan setup awal ──
+  
   const handleSetupSubmit = () => {
     const amp  = parseFloat(setupForm.max_current)
     const tarif = parseFloat(setupForm.price_kwh)
@@ -359,7 +359,7 @@ export default function App() {
     setFirstRun(false)
     setSetupError('')
 
-    // Publish initial limit to ESP32
+    
     if (mqttClientRef.current && mqttConnected) {
       const configTopic = `voltedge/config/${deviceInfo.mac_address.toUpperCase()}`
       const configVal = String(amp)
@@ -368,7 +368,7 @@ export default function App() {
     }
   }
 
-  // ── WIZARD SETUP — Hanya tampil pertama kali ──
+  
   if (firstRun) {
     const inp = {
       width: '100%', padding: '12px 14px', borderRadius: 10, fontSize: 14, fontWeight: 500,
@@ -382,7 +382,7 @@ export default function App() {
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: 20, fontFamily: "'Inter', system-ui, sans-serif"
       }}>
-        {/* Background glow */}
+        {}
         <div style={{
           position: 'fixed', inset: 0, pointerEvents: 'none',
           background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(56,189,248,0.12) 0%, transparent 70%)'
@@ -392,7 +392,7 @@ export default function App() {
           width: '100%', maxWidth: 460, position: 'relative', zIndex: 1,
           animation: 'fadeUp 0.5s cubic-bezier(0.16,1,0.3,1)'
         }}>
-          {/* Logo / Brand */}
+          {}
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <div style={{
               display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
@@ -409,18 +409,18 @@ export default function App() {
             </p>
           </div>
 
-          {/* Card */}
+          {}
           <div style={{
             background: 'linear-gradient(160deg, rgba(15,23,42,0.95), rgba(7,12,30,0.98))',
             border: '1px solid rgba(56,189,248,0.15)',
             borderRadius: 20, overflow: 'hidden',
             boxShadow: '0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(56,189,248,0.08)'
           }}>
-            {/* Top accent bar */}
+            {}
             <div style={{ height: 3, background: 'linear-gradient(90deg, #38BDF8, #22D3EE, #38BDF8)', backgroundSize: '200%', animation: 'shimmer 3s linear infinite' }} />
 
             <div style={{ padding: '28px 28px 24px' }}>
-              {/* Step 1 — Batas Arus */}
+              {}
               <div style={{ marginBottom: 20 }}>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#38BDF8', marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                    Batas Arus Maksimum
@@ -445,7 +445,7 @@ export default function App() {
                 </p>
               </div>
 
-              {/* Step 2 — Tarif Listrik */}
+              {}
               <div style={{ marginBottom: 24 }}>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#22D3EE', marginBottom: 8, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                    Tarif Dasar Listrik
@@ -474,7 +474,7 @@ export default function App() {
                 </p>
               </div>
 
-              {/* Error */}
+              {}
               {setupError && (
                 <div style={{
                   background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
@@ -486,7 +486,7 @@ export default function App() {
                 </div>
               )}
 
-              {/* Submit */}
+              {}
               <button
                 onClick={handleSetupSubmit}
                 style={{
@@ -505,7 +505,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* Footer note */}
+          {}
           <p style={{ textAlign: 'center', fontSize: 11, color: '#334155', marginTop: 16 }}>
             Pengaturan dapat diubah kapan saja di halaman Settings.
           </p>
@@ -525,7 +525,7 @@ export default function App() {
     )
   }
 
-  // ── CONNECTING SCREEN — Menunggu data pertama dari ESP32 ──
+  
   if (logs.length === 0 && !skipWaiting) {
     return (
       <div style={{
@@ -533,13 +533,13 @@ export default function App() {
         height: '100vh', backgroundColor: '#020617', gap: 20,
         fontFamily: "'Inter', system-ui, sans-serif"
       }}>
-        {/* Glow background */}
+        {}
         <div style={{
           position: 'fixed', inset: 0, pointerEvents: 'none',
           background: 'radial-gradient(ellipse 50% 40% at 50% 50%, rgba(56,189,248,0.08) 0%, transparent 70%)'
         }} />
 
-        {/* Spinning ring */}
+        {}
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div style={{
             position: 'absolute', width: 90, height: 90, borderRadius: '50%',
@@ -556,7 +556,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Text */}
+        {}
         <div style={{ textAlign: 'center', padding: '0 24px', maxWidth: 380 }}>
           <h3 style={{ color: '#F1F5F9', fontSize: 18, fontWeight: 800, margin: '0 0 10px', letterSpacing: '-0.02em' }}>
             Menunggu Sinyal ESP32...
@@ -569,7 +569,7 @@ export default function App() {
           </p>
         </div>
 
-        {/* Config summary */}
+        {}
         <div style={{
           background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(56,189,248,0.1)',
           borderRadius: 14, padding: '14px 22px',
@@ -586,7 +586,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Skip button */}
+        {}
         <button
           onClick={() => setSkipWaiting(true)}
           style={{
@@ -619,13 +619,13 @@ export default function App() {
     )
   }
 
-  // ── Protected app shell ──
+  
   return (
     <div style={{ position: 'relative', display: 'flex', height: '100vh', overflow: 'hidden', backgroundColor: '#020617', paddingBottom: isMobile ? 60 : 0 }}>
-      {/* Background overlay */}
+      {}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundImage: 'url("/assets/monitoring.avif")', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.20, pointerEvents: 'none', zIndex: 0 }} />
 
-      {/* ═══════════ GLOBAL ALERT MODAL (CENTER) ═══════════ */}
+      {}
       {globalAlert && !userChecked && (() => {
         const isGas     = globalAlert.type === 'gas'
         const accent    = isGas ? '#F97316' : '#EF4444'
@@ -638,7 +638,7 @@ export default function App() {
 
         return (
           <>
-            {/* Backdrop */}
+            {}
             <div style={{
               position: 'fixed', inset: 0, zIndex: 99998,
               background: 'rgba(2,6,23,0.82)',
@@ -647,7 +647,7 @@ export default function App() {
               animation: 'backdropIn 0.3s ease',
             }} />
 
-            {/* Modal */}
+            {}
             <div style={{
               position: 'fixed', inset: 0, zIndex: 99999,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -666,7 +666,7 @@ export default function App() {
                 position: 'relative',
               }}>
 
-                {/* Animated top accent bar */}
+                {}
                 <div style={{
                   height: 4,
                   background: `linear-gradient(90deg, transparent, ${accent}, ${accent}, transparent)`,
@@ -674,7 +674,7 @@ export default function App() {
                   backgroundSize: '200% 100%',
                 }} />
 
-                {/* Pulsing glow behind icon */}
+                {}
                 <div style={{
                   position: 'absolute', top: 40, left: '50%',
                   transform: 'translateX(-50%)',
@@ -684,10 +684,10 @@ export default function App() {
                   pointerEvents: 'none',
                 }} />
 
-                {/* Body */}
+                {}
                 <div style={{ padding: '28px 28px 24px' }}>
 
-                  {/* Icon + Badge */}
+                  {}
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginBottom: 24 }}>
                     <div style={{
                       width: 72, height: 72, borderRadius: '50%',
@@ -726,7 +726,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Alert message box */}
+                  {}
                   <div style={{
                     background: accentBg,
                     border: `1px solid ${accentBdr}`,
@@ -739,7 +739,7 @@ export default function App() {
                     </p>
                   </div>
 
-                  {/* Action steps */}
+                  {}
                   {!showConfirm ? (
                     <>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
@@ -796,13 +796,13 @@ export default function App() {
                       <div style={{ display: 'flex', gap: 10 }}>
                         <button
                           onClick={() => {
-                            // Disarm gas alert (hysteresis) — tidak re-trigger sampai gas turun ke aman dulu
+                            
                             gasAlertArmed.current = false
                             setGlobalAlert(null)
                             setUserChecked(true)
                             setShowConfirm(false)
 
-                            // Publish remote reset command to ESP32 via MQTT
+                            
                             if (mqttClientRef.current && mqttConnected) {
                               const resetTopic = `voltedge/reset/${deviceInfo.mac_address.toUpperCase()}`
                               mqttClientRef.current.publish(resetTopic, "reset")

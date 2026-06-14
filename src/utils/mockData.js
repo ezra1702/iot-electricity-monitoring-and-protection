@@ -1,6 +1,6 @@
-/** mockData.js — Simulated IoT sensor data */
 
-/* ── Live sensor reading ───────────────────────── */
+
+
 export const getLiveMetrics = (status) => {
   const s = status || (Math.random() > 0.94 ? (Math.random() > 0.5 ? 'overload' : 'smoke') : 'normal')
   const isOverload = s === 'overload'
@@ -13,7 +13,7 @@ export const getLiveMetrics = (status) => {
   return { voltage, current, power, energy, powerFactor: pf, frequency: freq, status: s, timestamp: new Date() }
 }
 
-/* ── Time-series helpers ───────────────────────── */
+
 const walk = (start, min, max, step) => {
   let v = start
   return Array.from({ length: 30 }, (_, i) => {
@@ -28,7 +28,7 @@ export const genVoltageTimeSeries  = () => walk(226, 210, 242, 6)
 export const genCurrentTimeSeries  = () => walk(3.2, 0.5, 9.5, 1.2)
 export const genPowerTimeSeries    = () => walk(740, 200, 2300, 180)
 
-/* ── 14-day energy history ─────────────────────── */
+
 export const genEnergyHistory = (days = 14) => {
   const now = new Date()
   return Array.from({ length: days }, (_, i) => {
@@ -42,14 +42,14 @@ export const genEnergyHistory = (days = 14) => {
   })
 }
 
-/* ── Devices ───────────────────────────────────── */
+
 export const DEVICES = [
   { id: 'ESP32-3E01', name: 'Panel Utama',    location: 'Ruang Server', status: 'online',  ip: '192.168.1.101', fw: 'v2.1.4', rssi: -42, uptime: '3d 14h' },
   { id: 'ESP32-9F12', name: 'Panel Lantai 2', location: 'Lantai 2',     status: 'online',  ip: '192.168.1.102', fw: 'v2.1.4', rssi: -61, uptime: '1d 6h'  },
   { id: 'ESP32-2A33', name: 'Panel Workshop', location: 'Workshop',      status: 'offline', ip: '192.168.1.103', fw: 'v2.0.9', rssi: -82, uptime: '—'      },
 ]
 
-/* ── Notifications ─────────────────────────────── */
+
 export const NOTIFICATIONS_DATA = [
   { id: 1, type: 'danger',  title: 'Overload Terdeteksi',    msg: 'Arus 11.4A melebihi batas 10A di Panel Utama',       time: '2 mnt lalu',  read: false },
   { id: 2, type: 'warning', title: 'Tegangan Tidak Stabil',  msg: 'Fluktuasi ±12V terdeteksi di Panel Lantai 2',         time: '18 mnt lalu', read: false },
@@ -61,7 +61,7 @@ export const NOTIFICATIONS_DATA = [
   { id: 8, type: 'success', title: 'Firmware Update',        msg: 'ESP32-3E01 berhasil update ke firmware v2.1.4',        time: '1 hari lalu', read: true  },
 ]
 
-/* ── History logs ──────────────────────────────── */
+
 export const HISTORY_LOGS = Array.from({ length: 60 }, (_, i) => {
   const statuses = ['normal', 'normal', 'normal', 'overload', 'smoke']
   const st = statuses[Math.floor(Math.random() * statuses.length)]
@@ -83,11 +83,11 @@ export const HISTORY_LOGS = Array.from({ length: 60 }, (_, i) => {
   }
 })
 
-/* ── Donut distribution ────────────────────────── */
+
 export const LOAD_DISTRIBUTION = {
   labels: ['Panel Utama', 'Lantai 2', 'Workshop', 'Cadangan'],
   series: [47, 29, 17, 7],
 }
 
-/* ── Radar max values for normalization ────────── */
+
 export const RADAR_MAX = { voltage: 250, current: 10, power: 2500, powerFactor: 1, frequency: 60, energy: 10 }

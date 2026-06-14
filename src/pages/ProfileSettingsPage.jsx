@@ -8,7 +8,7 @@ import { Rp } from "../utils/formatters";
 
 const API = "http://localhost:5000";
 
-/* ── Inline feedback toast ── */
+
 function InlineToast({ msg, type }) {
   if (!msg) return null;
   const ok = type === "success";
@@ -28,28 +28,28 @@ function InlineToast({ msg, type }) {
   );
 }
 
-/**
- * Profile & system settings page — fully connected to backend API.
- */
+
+
+
 export function ProfileSettingsPage({ settings, onSave, user, onUpdateUser, addToast }) {
   const [tab, setTab] = useState("profile");
   const fileRef       = useRef(null);
 
-  // ── Profile state (seeded from localStorage/prop) ──
+  
   const userId = localStorage.getItem("voltEdge_userId") || "";
   const [profileForm, setP]   = useState({ name: user?.name || "", email: user?.email || localStorage.getItem("voltEdge_userEmail") || "" });
   const [pwdForm, setPwdForm] = useState({ current: "", newPwd: "", confirm: "" });
   const [showPwd, setShowPwd] = useState({ current: false, newPwd: false, confirm: false });
   const [sysForm, setSysForm] = useState({ ...settings });
 
-  // ── Loading & feedback ──
+  
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPwd,     setSavingPwd]     = useState(false);
   const [savingPhoto,   setSavingPhoto]   = useState(false);
   const [profileMsg,    setPMsg]          = useState({ msg: "", type: "" });
   const [pwdMsg,        setPwdMsg]        = useState({ msg: "", type: "" });
 
-  // ── Fetch fresh profile on mount ──
+  
   useEffect(() => {
     if (!userId) return;
     fetch(`${API}/api/auth/profile/${userId}`)
@@ -59,9 +59,9 @@ export function ProfileSettingsPage({ settings, onSave, user, onUpdateUser, addT
           setP({ name: data.user.name || "", email: data.user.email || "" });
           localStorage.setItem("voltEdge_userName",  data.user.name  || "");
           localStorage.setItem("voltEdge_userEmail", data.user.email || "");
-          // Sync parent state
+          
           onUpdateUser?.(u => ({ ...u, name: data.user.name, email: data.user.email }));
-          // Load foto dari DB
+          
           if (data.user.photo) {
             onUpdateUser?.(u => ({ ...u, photo: data.user.photo }));
           }
@@ -75,7 +75,7 @@ export function ProfileSettingsPage({ settings, onSave, user, onUpdateUser, addT
     setTimeout(() => setter({ msg: "", type: "" }), delay);
   };
 
-  /* ── Photo ── */
+  
   const savePhoto = async (base64OrNull) => {
     if (!userId) return;
     setSavingPhoto(true);
@@ -105,7 +105,7 @@ export function ProfileSettingsPage({ settings, onSave, user, onUpdateUser, addT
     reader.readAsDataURL(file);
   };
 
-  /* ── Save Profile ── */
+  
   const saveProfile = async () => {
     if (!profileForm.name.trim())  { flash(setPMsg, "Nama lengkap wajib diisi.", "error"); return; }
     if (!profileForm.email.trim()) { flash(setPMsg, "Email wajib diisi.", "error"); return; }
@@ -121,7 +121,7 @@ export function ProfileSettingsPage({ settings, onSave, user, onUpdateUser, addT
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Gagal menyimpan profil.");
 
-      // Sync localStorage & parent state
+      
       localStorage.setItem("voltEdge_userName",  data.user.name);
       localStorage.setItem("voltEdge_userEmail", data.user.email);
       setP({ name: data.user.name, email: data.user.email });
@@ -137,7 +137,7 @@ export function ProfileSettingsPage({ settings, onSave, user, onUpdateUser, addT
     }
   };
 
-  /* ── Save Password ── */
+  
   const savePwd = async () => {
     if (!pwdForm.current)                   { flash(setPwdMsg, "Masukkan password saat ini.", "error"); return; }
     if (pwdForm.newPwd.length < 6)          { flash(setPwdMsg, "Password baru minimal 6 karakter.", "error"); return; }
@@ -199,7 +199,7 @@ export function ProfileSettingsPage({ settings, onSave, user, onUpdateUser, addT
         <p style={{ fontSize: 13, color: "var(--t3)" }}>Kelola profil pribadi dan konfigurasi sistem</p>
       </div>
 
-      {/* Tab bar */}
+      {}
       <div style={{ display: "flex", gap: 4, background: "var(--card2)", borderRadius: 12, padding: 4, border: "1px solid var(--bd)", marginBottom: 24, width: "fit-content" }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)}
@@ -209,11 +209,11 @@ export function ProfileSettingsPage({ settings, onSave, user, onUpdateUser, addT
         ))}
       </div>
 
-      {/* ══ TAB: INFO PRIBADI ══ */}
+      {}
       {tab === "profile" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
-          {/* Foto Profil */}
+          {}
           <Card style={{ padding: 28 }}>
             <p style={{ fontSize: 13, fontWeight: 700, color: "var(--t1)", marginBottom: 3 }}>Foto Profil</p>
             <p style={{ fontSize: 11, color: "var(--t3)", marginBottom: 20 }}>Foto ditampilkan di seluruh dashboard</p>
@@ -258,7 +258,7 @@ export function ProfileSettingsPage({ settings, onSave, user, onUpdateUser, addT
             </div>
           </Card>
 
-          {/* Informasi Pribadi */}
+          {}
           <Card style={{ padding: 28 }}>
             <p style={{ fontSize: 13, fontWeight: 700, color: "var(--t1)", marginBottom: 3 }}>Informasi Pribadi</p>
             <p style={{ fontSize: 11, color: "var(--t3)", marginBottom: 20 }}>Perbarui nama dan alamat email Anda</p>
@@ -293,7 +293,7 @@ export function ProfileSettingsPage({ settings, onSave, user, onUpdateUser, addT
             </button>
           </Card>
 
-          {/* Ubah Password */}
+          {}
           <Card style={{ padding: 28 }}>
             <p style={{ fontSize: 13, fontWeight: 700, color: "var(--t1)", marginBottom: 3 }}>Ubah Password</p>
             <p style={{ fontSize: 11, color: "var(--t3)", marginBottom: 20 }}>Gunakan password yang kuat dan unik</p>
@@ -337,7 +337,7 @@ export function ProfileSettingsPage({ settings, onSave, user, onUpdateUser, addT
         </div>
       )}
 
-      {/* ══ TAB: SISTEM ══ */}
+      {}
       {tab === "system" && (
         <Card style={{ padding: 28 }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: "var(--t1)", marginBottom: 3 }}>Parameter Monitoring</p>
@@ -379,7 +379,7 @@ export function ProfileSettingsPage({ settings, onSave, user, onUpdateUser, addT
               </div>
               <p style={{ fontSize: 11, color: "var(--t4)", marginTop: 5 }}>Alert overload jika arus melewati nilai ini</p>
             </div>
-            {/* Preview */}
+            {}
             <div style={{ padding: 16, borderRadius: 12, background: "rgba(249,115,22,.07)", border: "1px solid rgba(249,115,22,.2)" }}>
               <p style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, color: "#f97316", marginBottom: 10 }}>Pratinjau Biaya</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
