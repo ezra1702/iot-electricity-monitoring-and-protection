@@ -1,40 +1,13 @@
-#  VoltEdge: Autonomous IoT Electricity Monitoring & Smart Protection System
+# VoltEdge: Autonomous IoT Electricity Monitoring & Smart Protection System
+
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-B736FF?style=for-the-badge&logo=vite&logoColor=FFD62B)](https://vite.dev/)
+[![ESP32](https://img.shields.io/badge/ESP32-E7352C?style=for-the-badge&logo=espressif&logoColor=white)](https://www.espressif.com/en/products/socs/esp32)
+[![C++](https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white)](https://isocpp.org/)
+[![MQTT](https://img.shields.io/badge/MQTT-3C3C3D?style=for-the-badge&logo=mqtt&logoColor=white)](https://mqtt.org/)
+[![FreeRTOS](https://img.shields.io/badge/FreeRTOS-4A4A4A?style=for-the-badge)](https://www.freertos.org/)
 
 Welcome, Engineer! **VoltEdge** is a premium, real-time IoT solution designed to monitor electrical parameters, detect hazardous gas leaks, and provide autonomous circuit protection. By leveraging an **ESP32 running FreeRTOS** and a **pure client-side React frontend** communicating directly via **MQTT over WebSockets**, VoltEdge eliminates the need for a traditional backend database server, minimizing latency and maximizing security.
-
----
-
-## System Architecture
-
-VoltEdge utilizes a **No-Backend, direct-broker MQTT architecture**. The React client subscribes directly to the hardware telemetry stream and controls limits remotely via WebSockets.
-
-```mermaid
-graph TD
-    %% Hardware Level
-    subgraph "Hardware Layer (ESP32)"
-        PZEM[PZEM-004T Power Sensor] -->|UART| ESP32[ESP32 MCU]
-        MQ2[MQ-2 Gas Sensor] -->|ADC| ESP32
-        ESP32 -->|GPIO 25| Relay[Safety Relay]
-        ESP32 -->|GPIO 19| Buzzer[Audible Alarm]
-        ESP32 -->|GPIO 18| ResetBtn[Physical Reset Button]
-        OLED[SH1106 OLED Display] <-->|I2C| ESP32
-    end
-
-    %% Communication Level
-    subgraph "Broker Layer"
-        MQTT[HiveMQ Public Broker]
-    end
-
-    %% Client Level
-    subgraph "Client Layer (Web Application)"
-        ReactApp[React SPA - Vite + Vanilla CSS]
-        LocalStorage[(Browser LocalStorage)] <--> ReactApp
-    end
-
-    %% Interconnections
-    ESP32 <-->|MQTT over TCP/IP| MQTT
-    MQTT <-->|MQTT over WebSockets WSS| ReactApp
-```
 
 ---
 
@@ -53,40 +26,7 @@ Below is the pin connection schematic for the ESP32 NodeMCU board:
 
 ---
 
-##  Firmware Architecture (FreeRTOS & FSM)
-
-The ESP32 firmware ([pzem_mq2_test.ino](file:///c:/Users/USER/Desktop/energy-dashboard/IoT/pzem_mq2_test.ino)) is split into two asynchronous RTOS tasks running on separate cores to isolate safety-critical logic from network operations:
-
-1. **`TaskSensorRead` (Core 0, Priority 3 - High)**:
-   * Periodically queries the sensors every 100ms.
-   * Drives the Finite State Machine (FSM).
-   * Directly triggers GPIO actuators (Relay and Buzzer) in response to safety limits.
-   
-2. **`TaskMQTT` (Core 1, Priority 1 - Low)**:
-   * Handles WiFi reconnection and processes the MQTT receive/transmit buffers.
-   * Publishes periodic telemetry payload and handles incoming control messages.
-
-### Finite State Machine (FSM) States
-
-```mermaid
-stateDiagram-v2
-    [*] --> STATE_NORMAL
-    
-    STATE_NORMAL --> STATE_ALERT_GAS : Gas > 2000 ppm
-    STATE_NORMAL --> STATE_ALERT_OVERLOAD : Current > Max Current Limit
-    
-    STATE_ALERT_GAS --> STATE_NORMAL : Reset Button / MQTT command (If Gas < 1500 ppm)
-    STATE_ALERT_GAS --> STATE_DISARMED_HYSTERESIS : Reset Command (If Gas is still high)
-    
-    STATE_DISARMED_HYSTERESIS --> STATE_NORMAL : Gas < 1500 ppm (Re-armed)
-    STATE_DISARMED_HYSTERESIS --> STATE_ALERT_OVERLOAD : Current > Max Current Limit
-    
-    STATE_ALERT_OVERLOAD --> STATE_NORMAL : Reset Button / MQTT command
-```
-
----
-
-##  MQTT Interface Specification
+## MQTT Interface Specification
 
 All communication topics are formatted as `voltedge/<action>/<MAC_ADDRESS>`:
 
@@ -176,4 +116,4 @@ To evaluate reliability under software faults, the system supports a simulated s
 
 ---
 
- *VoltEdge: Engineered for Safety, Designed for Clarity.*
+*VoltEdge: Engineered for Safety, Designed for Clarity.*
